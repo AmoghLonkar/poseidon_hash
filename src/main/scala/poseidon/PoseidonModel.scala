@@ -16,9 +16,66 @@ object PoseidonModel{
     )
 
     val fixedMDS = rawMDS.map(_.map(i => i % prime))
+
+    def Permutation(p: PoseidonParams, stateVec: ArrayBuffer[BigInt]): ArrayBuffer[BigInt] = {
+
+        var index = 0
+        var workVec: ArrayBuffer[BigInt] = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0))
+        (0 until p.t).foreach(i => workVec(i) = stateVec(i))
+
+        for(i <- 0 until p.Rf / 2){
+            workVec = roundFunction(p, workVec, true, index)
+            index += 1
+        }
+
+        for(i <- 0 until p.Rp){
+            workVec = roundFunction(p, workVec, false, index)
+            index += 1
+        }
+
+        for(i <- 0 until p.Rf/2){
+            workVec = roundFunction(p, workVec, true, index)
+            index += 1
+        }
+        assert(index == p.num_rounds)
+        val newStateVec: ArrayBuffer[BigInt] = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0) )
+        (0 until p.t).foreach(i => newStateVec(i) = workVec(i))
+        newStateVec
+    }
+
+    def roundFunction(p: PoseidonParams, stateVec: ArrayBuffer[BigInt], isFullRound: Boolean, index: Int): ArrayBuffer[BigInt] = {
+        var workVec: ArrayBuffer[BigInt] = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0))
+        (0 until p.t).foreach(i => workVec(i) = stateVec(i) + p.round_constants(index))
+
+        if(isFullRound){
+            workVec = workVec.map(i => Seq.fill(p.alpha)(i).reduce(_*_))
+        }
+        else{
+            workVec = workVec.map(i => if(i == p.t - 1) Seq.fill(p.alpha)(i).reduce(_*_) else i)
+        }
+
+        //Mix
+        val newStateVec = matMul(p, Seq.fill(1)(workVec), p.mds_mtx)
+        newStateVec
+    }
+
+    //Taken from HW4
+    def grabCol(m: Seq[Seq[BigInt]], i: Int) = m map { _(i) }
+
+    def dotP(a: Seq[BigInt], b: Seq[BigInt]) = a.zip(b).map{ case (x,y) => x * y}.sum
+    
+    def matMul(p: PoseidonParams, a: Seq[Seq[BigInt]], b: Seq[Seq[BigInt]]): ArrayBuffer[BigInt] = {
+        val mtx_prod: Seq[Seq[BigInt]] = Seq.tabulate(a.size, b.head.size){ case (i,j) => dotP(a(i), grabCol(b,j)) }
+        var ret_val = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0))             
+        (0 until p.t).foreach(i => ret_val(i) = mtx_prod(0)(i))
+
+        val newStateVec = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0))
+        (0 until p.t).foreach(i => newStateVec(i) = ret_val(i))
+        newStateVec
+    }
 }
 
-case class PoseidonParams(field: Seq[BigInt], r: Int, c: Int, Rf: Int, Rp: Int, alpha: Int,genVals: Boolean = false, t: Int = 3){
+case class PoseidonParams(r: Int, c: Int, Rf: Int, Rp: Int, alpha: Int,genVals: Boolean = false, t: Int = 3){
     val m = r + c
     require(Rf % 2 == 0)
     
@@ -41,70 +98,18 @@ case class PoseidonParams(field: Seq[BigInt], r: Int, c: Int, Rf: Int, Rp: Int, 
     }
 }
 
-//Taken from HW4 MatMul
-object MatMul {
-  type Matrix = Seq[Seq[Int]]
-
-  def apply(a: Matrix, b: Matrix): Matrix = {
-        // BEGIN SOLUTION
-    
-    def grabCol(m: Seq[Seq[Int]], i: Int) = m map { _(i) }
-
-    def dotP(a: Seq[Int], b: Seq[Int]) = a.zip(b).map{ case (x,y) => x * y}.sum
-    
-    def matMul(a: Seq[Seq[Int]], b: Seq[Seq[Int]]) = Seq.tabulate(a.size, b.head.size){
-     case (i,j) => dotP(a(i), grabCol(b,j))
-    }
-    matMul(a, b)
-  }
-}
-
 class PoseidonModel(p: PoseidonParams){
     
     var stateVec: ArrayBuffer[BigInt] = new ArrayBuffer[BigInt]() ++ Seq.fill(p.t)(BigInt(0))
     
-    def apply(in_words: Seq[BigInt]): Seq[BigInt] = {
+    def apply(in_words: Seq[BigInt]): ArrayBuffer[BigInt] = {
         require(in_words.length == p.t)
 
         //Initializing state vec
         (0 until p.t).foreach(i => this.stateVec(i) = in_words(i))
-    
-        def Permutation(values: Seq[BigInt]){
-            require(values.length == p.m)
-            var index = 0
-            for(i <- 0 until p.Rf / 2){
-                values = roundFunction(values, true, index)
-                index += 1
-            }
 
-            for(i <- 0 until p.Rp){
-                values = roundFunction(values, false, index)
-                index += 1
-            }
-
-            for(i <- 0 until p.Rf/2){
-                values = roundFunction(values, true, index)
-                index += 1
-            }
-            assert(index == p.num_rounds)
-            values
-        }
-
-        def roundFunction(values: Seq[BigInt], roundType: Boolean, index: int){
-            values += p.round_const[index]
-
-            if(roundType){
-                values = (0 until values.length).map(i => Seq.fill(p.alpha)(i).reduce(_*_))
-            }
-            else{
-                values = (0 until values.length) map (i => if(i == l.length - 1) Seq.fill(3)(i).reduce(_*_) else values(i))
-            }
-
-            //Mix
-            values = MatMul.matMul(Seq.fill(1)(values), p.mds_mtx)
-            values(0)
-        }
         //Calling Permutation function to generate hash
-        Permutation(this.stateVec)
+        this.stateVec = PoseidonModel.Permutation(p, this.stateVec)            
+        this.stateVec
     }
 }
