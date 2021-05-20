@@ -112,6 +112,47 @@ case class PoseidonParams(r: Int, c: Int, Rf: Int, Rp: Int, alpha: Int,genVals: 
     }
 }
 
+case class Message(str: String, t: Int) {
+
+    // convert normal string to 0-padded hex bytes string
+    def string2hex(str: String, t: Int): String = {
+        var ret_val = str.toList.map(_.toInt.toHexString).mkString
+        for(i <- 0 until 32*t){
+            ret_val = "0" + ret_val
+        }
+        val msgString = ret_val
+        msgString
+    }
+
+    // convert hex bytes string into ArrayBuffer for stateVec
+    def string2Chunks(str: String, t: Int): ArrayBuffer[BigInt] = {
+        val msgChunks: ArrayBuffer[BigInt] = new ArrayBuffer[BigInt]() ++ Seq.fill(t)(BigInt(0))
+
+        val msgString = string2hex(str, t)
+
+        (0 until t) foreach( i => msgChunks(i) = BigInt(msgString.substring(i*32, (i+1)*32), 16))
+        msgChunks
+    }
+
+    // convert ArrayBuffer into hex string for returning hash
+    def chunks2String(msgChunks: ArrayBuffer[BigInt], t: Int): String = {
+        var ret_val: String = ""
+        (0 until t) foreach( i => ret_val += msgChunks(i).toString(16))
+        val hashed_str = ret_val
+        hashed_str
+    }
+
+    // convert hex bytes string to normal string
+    def hex2string(hex: String): String = {
+        hex.sliding(2, 2).toArray.map(Integer.parseInt(_, 16).toChar).mkString
+    }
+
+    def ret_Hash(stateVec: ArrayBuffer[BigInt], t: Int): String = {
+        val hex_string = chunks2String(stateVec, t)
+        hex2string(hex_string)
+    } 
+}
+
 class PoseidonModel(p: PoseidonParams){
     
     var stateVec: ArrayBuffer[BigInt] = new ArrayBuffer[BigInt]() ++ Seq.fill(p.t)(BigInt(0))
