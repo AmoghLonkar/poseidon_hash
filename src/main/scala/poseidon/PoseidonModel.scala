@@ -55,7 +55,7 @@ object PoseidonModel{
         }
 
         //Mix
-        val newStateVec = matMul(p, Seq.fill(1)(workVec), p.mds_mtx)
+        val newStateVec = matMul(p,  p.mds_mtx, Seq.fill(1)(workVec),
         newStateVec
     }
 
@@ -67,7 +67,7 @@ object PoseidonModel{
     def matMul(p: PoseidonParams, a: Seq[Seq[BigInt]], b: Seq[Seq[BigInt]]): ArrayBuffer[BigInt] = {
         val mtx_prod: Seq[Seq[BigInt]] = Seq.tabulate(a.size, b.head.size){ case (i,j) => dotP(a(i), grabCol(b,j)) }
         var ret_val = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0))             
-        (0 until p.t).foreach(i => ret_val(i) = mtx_prod(0)(i))
+        (0 until p.t).foreach(i => ret_val(i) = mtx_prod(i)(0))
 
         val newStateVec = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0))
         (0 until p.t).foreach(i => newStateVec(i) = ret_val(i))
