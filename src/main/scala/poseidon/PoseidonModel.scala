@@ -45,18 +45,17 @@ object PoseidonModel{
 
     def roundFunction(p: PoseidonParams, stateVec: ArrayBuffer[BigInt], isFullRound: Boolean, index: Int): ArrayBuffer[BigInt] = {
         var workVec: ArrayBuffer[BigInt] = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0))
-        (0 until p.t).foreach(i => workVec(i) = stateVec(i) + p.round_constants(index))
+        (0 until p.t).foreach(i => workVec(i) = (stateVec(i) + p.round_constants(index)) % prime )
         
         if(isFullRound){
-            workVec = workVec.map(i => Seq.fill(p.alpha)(i).reduce(_*_))
+            workVec = workVec.map(i => Seq.fill(p.alpha)(i).reduce(_*_) % prime)
         }
         else{
-            workVec = workVec.map(i => if( i == workVec.head) Seq.fill(p.alpha)(i).reduce(_*_)% prime else i)
+            workVec = workVec.map(i => if( i == workVec.head) Seq.fill(p.alpha)(i).reduce(_*_) % prime else i)
         }
         
         //Mix
         val newStateVec = matMul(p, p.mds_mtx, (0 until p.t) map (i => Seq.fill(1)(workVec(i))))
-        print(workVec)
         newStateVec
     }
 
