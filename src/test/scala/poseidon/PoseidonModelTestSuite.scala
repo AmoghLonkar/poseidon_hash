@@ -18,8 +18,8 @@ class PoseidonModelTester extends FreeSpec with ChiselScalatestTester {
         val exp_out = ArrayBuffer[BigInt]()
         (0 until p.t).foreach(i => exp_out += BigInt(raw_out(i)))
         assert(PoseidonModel.roundFunction(p, v, true, 0) == exp_out)
-
     }
+
     "Software half round should work" in {
         val v = ArrayBuffer(BigInt(0),BigInt(1),BigInt(2))
         val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5)
@@ -27,7 +27,6 @@ class PoseidonModelTester extends FreeSpec with ChiselScalatestTester {
         val exp_out = ArrayBuffer[BigInt]()
         (0 until p.t).foreach(i => exp_out += BigInt(raw_out(i)))
         assert(PoseidonModel.roundFunction(p, v, false, 0) == exp_out)
-
     }
 
     "Software Poseidon254_3 should compute correct hash of 'Seq(0,1,2)'" in {

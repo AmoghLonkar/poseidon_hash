@@ -49,12 +49,9 @@ object PoseidonModel{
     //def roundFunction(p: PoseidonParams, stateVec: ArrayBuffer[BigInt], isFullRound: Boolean): ArrayBuffer[BigInt] = {
         var workVec: ArrayBuffer[BigInt] = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0))
 
-
-    //print(workVec)
-        //print(index)
-    for(i <- 0 until p.t){
-        workVec(i) = stateVec(i)+ fixedRoundConst(i+index)
-    }
+        for(i <- 0 until p.t){
+            workVec(i) = stateVec(i)+ fixedRoundConst(i+index)
+        }
 
         //print(workVec)
         
@@ -93,6 +90,8 @@ case class PoseidonParams(r: Int, c: Int, Rf: Int, Rp: Int, alpha: Int,genVals: 
     val m = r + c
     require(Rf % 2 == 0)
     
+    //val msgLen = t * 32 
+    //val hashLen = t * 32 
     val num_rounds = Rf + Rp
     val out_size = c
     //require(out_size < r)
