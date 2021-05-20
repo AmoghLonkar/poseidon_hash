@@ -46,16 +46,17 @@ object PoseidonModel{
     def roundFunction(p: PoseidonParams, stateVec: ArrayBuffer[BigInt], isFullRound: Boolean, index: Int): ArrayBuffer[BigInt] = {
         var workVec: ArrayBuffer[BigInt] = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0))
         (0 until p.t).foreach(i => workVec(i) = stateVec(i) + p.round_constants(index))
-
+        
         if(isFullRound){
             workVec = workVec.map(i => Seq.fill(p.alpha)(i).reduce(_*_))
         }
         else{
-            workVec = workVec.map(i => if(i == p.t - 1) Seq.fill(p.alpha)(i).reduce(_*_) else i)
+            workVec = workVec.map(i => if( i == workVec.head) Seq.fill(p.alpha)(i).reduce(_*_)% prime else i)
         }
-
+        
         //Mix
         val newStateVec = matMul(p, p.mds_mtx, (0 until p.t) map (i => Seq.fill(1)(workVec(i))))
+        print(workVec)
         newStateVec
     }
 
@@ -66,9 +67,7 @@ object PoseidonModel{
     
     def matMul(p: PoseidonParams, a: Seq[Seq[BigInt]], b: Seq[Seq[BigInt]]): ArrayBuffer[BigInt] = {
         val mtx_prod: Seq[Seq[BigInt]] = Seq.tabulate(a.size, b.head.size){ case (i,j) => dotP(a(i), grabCol(b,j)) }
-        println((a(0)(0) * b(0)(0)) % prime)
-        println((a(0)(1) * b(1)(0)) % prime)
-        println((a(0)(2) * b(2)(0)) % prime)
+
 
         var ret_val = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0))             
         (0 until p.t).foreach(i => ret_val(i) = mtx_prod(i)(0))
