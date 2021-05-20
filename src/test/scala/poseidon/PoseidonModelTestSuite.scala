@@ -10,27 +10,25 @@ import chisel3.tester.experimental.TestOptionBuilder._
 import scala.collection.mutable.ArrayBuffer
 
 class PoseidonModelTester extends FreeSpec with ChiselScalatestTester {
-    // "Software full round should work" in {
-    //     val v = ArrayBuffer(BigInt(0),BigInt(1),BigInt(2))
+    "Software full round should work" in {
+        val v = ArrayBuffer(BigInt(0),BigInt(1),BigInt(2))
 
-    //     val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5)
-    //     val raw_out = Seq("282632456682227911414206241016488835686554689305466568982077256658250712558", "11917093825321412328192341813986995477498953231172500502534701133527538595380", "16178523585147542488843960293009279670169469496632225926281827801976870407225")
-    //     val exp_out = ArrayBuffer[BigInt]()
-    //     (0 until p.t).foreach(i => exp_out += BigInt(raw_out(i)))
-    //     //assert(PoseidonModel.roundFunction(p, v, true, 0) == exp_out)
-    //     assert(PoseidonModel.roundFunction(p, v, true) == exp_out)
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5)
+        val raw_out = Seq("8911802574348315987449836474871354036259397526939586959061211560439926436096", "985952325209333242621206154741933566805100493600790329107350091977382796129", "5624942857022694920016589052460625832985228527533686355747501579407992302578")
+        val exp_out = ArrayBuffer[BigInt]()
+        (0 until p.t).foreach(i => exp_out += BigInt(raw_out(i)))
+        assert(PoseidonModel.roundFunction(p, v, true, 0) == exp_out)
 
-    // }
-    // "Software half round should work" in {
-    //     val v = ArrayBuffer(BigInt(0),BigInt(1),BigInt(2))
-    //     val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5)
-    //     val raw_out = Seq("14965134945793732865350679931124011880240139321801211710425778720571148366276", "3868204542908165419123931668177036829299999539168523914519394764625024544340", "3235367473085521110766631874957383689991448664301590931405940712777711390853")
-    //     val exp_out = ArrayBuffer[BigInt]()
-    //     (0 until p.t).foreach(i => exp_out += BigInt(raw_out(i)))
-    //     //assert(PoseidonModel.roundFunction(p, v, false, 0) == exp_out)
-    //     assert(PoseidonModel.roundFunction(p, v, false) == exp_out)
+    }
+    "Software half round should work" in {
+        val v = ArrayBuffer(BigInt(0),BigInt(1),BigInt(2))
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5)
+        val raw_out = Seq("8922116320408198701234205881974946777532428279772296419481941921645749524661", "11958583305522522826214344438521253929156446831200313855904403507320628382882", "6647132360235631115914024297955397799760950858886512568603794167233508926731")
+        val exp_out = ArrayBuffer[BigInt]()
+        (0 until p.t).foreach(i => exp_out += BigInt(raw_out(i)))
+        assert(PoseidonModel.roundFunction(p, v, false, 0) == exp_out)
 
-    // }
+    }
 
     "Software Poseidon254_3 should compute correct hash of 'Seq(0,1,2)'" in {
         val v = ArrayBuffer(BigInt(0),BigInt(1),BigInt(2))
