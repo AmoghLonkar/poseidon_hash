@@ -31,12 +31,12 @@ object PoseidonModel{
 
         for(i <- 0 until p.Rp){
             workVec = roundFunction(p, workVec, false, index)
-            index += 3
+            index += p.t
         }
  
         for(i <- 0 until p.Rf/2){
             workVec = roundFunction(p, workVec, true, index)
-            index += 3
+            index += p.t
         }
 
         assert(index == p.num_rounds*p.t)
