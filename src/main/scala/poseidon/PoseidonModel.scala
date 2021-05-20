@@ -55,17 +55,21 @@ object PoseidonModel{
         }
 
         //Mix
-        val newStateVec = matMul(p, p.mds_mtx, Seq.fill(1)(workVec))
+        val newStateVec = matMul(p, p.mds_mtx, (0 until p.t) map (i => Seq.fill(1)(workVec(i))))
         newStateVec
     }
 
     //Taken from HW4
     def grabCol(m: Seq[Seq[BigInt]], i: Int) = m map { _(i) }
 
-    def dotP(a: Seq[BigInt], b: Seq[BigInt]) = a.zip(b).map{ case (x,y) => x * y}.sum
+    def dotP(a: Seq[BigInt], b: Seq[BigInt]) = a.zip(b).map{ case (x,y) => (x * y)}.sum % prime
     
     def matMul(p: PoseidonParams, a: Seq[Seq[BigInt]], b: Seq[Seq[BigInt]]): ArrayBuffer[BigInt] = {
         val mtx_prod: Seq[Seq[BigInt]] = Seq.tabulate(a.size, b.head.size){ case (i,j) => dotP(a(i), grabCol(b,j)) }
+        println((a(0)(0) * b(0)(0)) % prime)
+        println((a(0)(1) * b(1)(0)) % prime)
+        println((a(0)(2) * b(2)(0)) % prime)
+
         var ret_val = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0))             
         (0 until p.t).foreach(i => ret_val(i) = mtx_prod(i)(0))
 
