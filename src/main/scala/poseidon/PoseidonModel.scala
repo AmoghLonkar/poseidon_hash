@@ -2,6 +2,7 @@ package poseidon
 
 import chisel3._
 import scala.collection.mutable.ArrayBuffer
+import javax.swing.SwingWorker
 
 object PoseidonModel{
     val prime = BigInt("30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001", 16)
@@ -25,28 +26,36 @@ object PoseidonModel{
 
         for(i <- 0 until p.Rf / 2){
             workVec = roundFunction(p, workVec, true, index)
-            index += 1
+            index += p.t 
         }
 
         for(i <- 0 until p.Rp){
             workVec = roundFunction(p, workVec, false, index)
-            index += 1
+            index += 3
         }
-
+ 
         for(i <- 0 until p.Rf/2){
             workVec = roundFunction(p, workVec, true, index)
-            index += 1
+            index += 3
         }
-        assert(index == p.num_rounds)
+
+        assert(index == p.num_rounds*p.t)
         val newStateVec: ArrayBuffer[BigInt] = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0) )
         (0 until p.t).foreach(i => newStateVec(i) = workVec(i))
         newStateVec
     }
 
     def roundFunction(p: PoseidonParams, stateVec: ArrayBuffer[BigInt], isFullRound: Boolean, index: Int): ArrayBuffer[BigInt] = {
+    //def roundFunction(p: PoseidonParams, stateVec: ArrayBuffer[BigInt], isFullRound: Boolean): ArrayBuffer[BigInt] = {
         var workVec: ArrayBuffer[BigInt] = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0))
-        (0 until p.t).foreach(i => workVec(i) = stateVec(i) + p.round_constants(index))
-        
+
+    //print(workVec)
+        //print(index)
+    for(i <- 0 until p.t){
+        workVec(i) = stateVec(i)+ fixedRoundConst(i+index)
+    }
+
+        //print(workVec)
         if(isFullRound){
             workVec = workVec.map(i => Seq.fill(p.alpha)(i).reduce(_*_))
         }
@@ -56,7 +65,7 @@ object PoseidonModel{
         
         //Mix
         val newStateVec = matMul(p, p.mds_mtx, (0 until p.t) map (i => Seq.fill(1)(workVec(i))))
-        print(workVec)
+        //print(workVec)
         newStateVec
     }
 
