@@ -43,5 +43,23 @@ class PoseidonModelTester extends FreeSpec with ChiselScalatestTester {
     //     
     // }
 
+}
 
+class MessageTester extends FreeSpec with ChiselScalatestTester {
+    "Message should convert input string into stateVec of 3, 32B chunks" in {
+        val msg = Message("chisel", 3)
+
+        val exp_out = ArrayBuffer(BigInt(0), BigInt(0), BigInt("63686973656c", 16))
+        assert(msg.string2Chunks("in_string", 3) == exp_out)
+    }
+
+    /*
+    "Message should convert final, hashed stateVec of 3, 32B chunks into output string" in {
+        val stateVec = ArrayBuffer(BigInt(0), BigInt(0), BigInt(in_string, 16))
+        val t = 3
+
+        val exp_out = "chisel"
+        assert(Message.chunks2String(stateVec, t) == exp_out)
+    }
+    */
 }
