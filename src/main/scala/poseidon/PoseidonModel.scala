@@ -92,6 +92,8 @@ case class PoseidonParams(r: Int, c: Int, Rf: Int, Rp: Int, alpha: Int, t: Int =
     val m = r + c
     require(Rf % 2 == 0)
     
+    //val msgLen = t * 32 
+    //val hashLen = t * 32 
     val num_rounds = Rf + Rp
     val out_size = c
     //require(out_size < r)
