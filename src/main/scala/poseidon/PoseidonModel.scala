@@ -125,12 +125,6 @@ case class Message(str: String, t: Int) {
         msgString
     }
 
-    // convert string to int for Poseidon IO input
-    def string2BigInt(): BigInt = {
-        val ret_val = str.toList.map(_.toInt.toHexString).mkString
-        BigInt(ret_val, 16)
-    }
-
     // convert hex bytes string into ArrayBuffer for stateVec
     def string2Chunks(): ArrayBuffer[BigInt] = {
         val msgChunks: ArrayBuffer[BigInt] = new ArrayBuffer[BigInt]() ++ Seq.fill(t)(BigInt(0))
@@ -141,8 +135,14 @@ case class Message(str: String, t: Int) {
         msgChunks
     }
 
-    // convert ArrayBuffer into hex string for returning hash
-    def chunks2String(msgChunks: ArrayBuffer[BigInt]): String = {
+    // convert string to int for Poseidon IO input
+    def string2BigInt(): BigInt = {
+        val ret_val = str.toList.map(_.toInt.toHexString).mkString
+        BigInt(ret_val, 16)
+    }
+
+    //Converting ArrayBuffer into BigInt for Poseidon IO output
+    def chunks2BigInt(msgChunks: ArrayBuffer[BigInt]): BigInt = {
         var ret_val: String = ""
         val str_array: ArrayBuffer[String] = new ArrayBuffer[String]() ++ Seq.fill(t)("")
         //(0 until t) foreach( i => if(msgChunks(i) != 0) ret_val += msgChunks(i).toString(16))
@@ -156,8 +156,7 @@ case class Message(str: String, t: Int) {
         }
     
         (0 until t) foreach( i => ret_val += str_array(i))
-        val hashed_str = ret_val
-        hashed_str
+        BigInt(ret_val, 16)
     }
 }
 
@@ -165,7 +164,7 @@ class PoseidonModel(p: PoseidonParams){
     
     var stateVec: ArrayBuffer[BigInt] = new ArrayBuffer[BigInt]() ++ Seq.fill(p.t)(BigInt(0))
     
-    def apply(in_words: Seq[BigInt]): ArrayBuffer[BigInt] = {
+    def apply(in_words: ArrayBuffer[BigInt]): ArrayBuffer[BigInt] = {
         require(in_words.length == p.t)
 
         //Initializing state vec
