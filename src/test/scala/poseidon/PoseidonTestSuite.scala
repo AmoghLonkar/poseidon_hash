@@ -32,4 +32,16 @@ import chisel3.tester.experimental.TestOptionBuilder._
         val m = Message("", p.t)
         testPoseidon(p, m) 
     }
+
+    "Hardware Poseidon module should compute correct hash of 'abc'" in {
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5)
+        val m = Message("", p.t)
+        testPoseidon(p, m) 
+    }
+
+    "Hardware Poseidon module should compute correct hash of 'Chisel is too much fun!'" in {
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5)
+        val m = Message("", p.t)
+        testPoseidon(p, m) 
+    }
  }
