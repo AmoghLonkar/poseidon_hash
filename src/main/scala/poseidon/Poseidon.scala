@@ -44,8 +44,8 @@ class Poseidon(p: PoseidonParams=Poseidon.defParams) extends Module {
     val (cycles, done) = Counter(0 until (p.Rf + p.Rp)*(3 + p.t*p.t), true.B, state === Poseidon.firstRf)
     
     val (roundCycles, roundDone) = Counter(0 until 3 + p.t*p.t, (state === Poseidon.firstRf) || (state === Poseidon.rpRounds) || (state === Poseidon.secondRf))
-    val (fullCycles, fullRoundDone) = Counter(0 until p.Rf/2, roundDone)
-    val (partialCycles, partialRoundDone) = Counter(0 until p.Rp, roundDone)
+    val (fullCycles, fullRoundDone) = Counter(0 until p.Rf/2, roundDone && (state === Poseidon.firstRf || state === Poseidon.secondRf))
+    val (partialCycles, partialRoundDone) = Counter(0 until p.Rp, roundDone && (state === Poseidon.rpRounds))
 
     val (index, indexDone) = Counter(0 until p.t*(p.Rf + p.Rp) by p.t, roundDone)
     
@@ -155,7 +155,7 @@ class Poseidon(p: PoseidonParams=Poseidon.defParams) extends Module {
         }
       }
     }
-
+  
     io.digest.valid := RegNext(done)
     io.digest.bits := Poseidon.collapseSeq(stateVec)
 }
