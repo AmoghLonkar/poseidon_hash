@@ -24,16 +24,19 @@ object PoseidonModel{
         var workVec: ArrayBuffer[BigInt] = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0))
         (0 until p.t).foreach(i => workVec(i) = stateVec(i))
 
+        //First half full rounds
         for(i <- 0 until p.Rf / 2){
             workVec = roundFunction(p, workVec, true, index)
             index += p.t 
         }
 
+        //Partial rounds
         for(i <- 0 until p.Rp){
             workVec = roundFunction(p, workVec, false, index)
             index += p.t
         }
- 
+        
+        //Second half full rounds
         for(i <- 0 until p.Rf/2){
             workVec = roundFunction(p, workVec, true, index)
             index += p.t
@@ -46,18 +49,14 @@ object PoseidonModel{
     }
 
     def roundFunction(p: PoseidonParams, stateVec: ArrayBuffer[BigInt], isFullRound: Boolean, index: Int): ArrayBuffer[BigInt] = {
-    //def roundFunction(p: PoseidonParams, stateVec: ArrayBuffer[BigInt], isFullRound: Boolean): ArrayBuffer[BigInt] = {
         var workVec: ArrayBuffer[BigInt] = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0))
 
-
-    //print(workVec)
-        //print(index)
-    for(i <- 0 until p.t){
-        workVec(i) = stateVec(i)+ fixedRoundConst(i+index)
-    }
-
-        //print(workVec)
+        //Add Round Constants
+        for(i <- 0 until p.t){
+            workVec(i) = stateVec(i)+ fixedRoundConst(i+index)
+        }
         
+        //S-box layer
         if(isFullRound){
             workVec = workVec.map(i => Seq.fill(p.alpha)(i).reduce(_*_) % prime)
         }
@@ -66,19 +65,19 @@ object PoseidonModel{
         }
         
         //Mix
-        val newStateVec = matMul(p, p.mds_mtx, (0 until p.t) map (i => Seq.fill(1)(workVec(i))))
+        val newStateVec = matMul(p, fixedMDS, (0 until p.t) map (i => Seq.fill(1)(workVec(i))))
 
         newStateVec
     }
 
-    //Taken from HW4
+    //Taken helper functions from HW4 and 
+    //modified matMul to return proper output format
     def grabCol(m: Seq[Seq[BigInt]], i: Int) = m map { _(i) }
 
     def dotP(a: Seq[BigInt], b: Seq[BigInt]) = a.zip(b).map{ case (x,y) => (x * y)}.sum % prime
     
     def matMul(p: PoseidonParams, a: Seq[Seq[BigInt]], b: Seq[Seq[BigInt]]): ArrayBuffer[BigInt] = {
         val mtx_prod: Seq[Seq[BigInt]] = Seq.tabulate(a.size, b.head.size){ case (i,j) => dotP(a(i), grabCol(b,j)) }
-
 
         var ret_val = (new ArrayBuffer[BigInt]) ++ Seq.fill(p.t)(BigInt(0))             
         (0 until p.t).foreach(i => ret_val(i) = mtx_prod(i)(0))
@@ -89,26 +88,59 @@ object PoseidonModel{
     }
 }
 
-case class PoseidonParams(r: Int, c: Int, Rf: Int, Rp: Int, alpha: Int,genVals: Boolean = false, t: Int = 3){
+case class PoseidonParams(r: Int, c: Int, Rf: Int, Rp: Int, alpha: Int, t: Int = 3){
     val m = r + c
     require(Rf % 2 == 0)
     
     val num_rounds = Rf + Rp
     val out_size = c
     //require(out_size < r)
+}
 
-    val round_constants = if(genVals) genRoundConst() else PoseidonModel.fixedRoundConst
-    
-    val mds_mtx = if(genVals) genMDSMtx() else PoseidonModel.fixedMDS
-    
-    //TO-DO: Implement function
-    def genRoundConst(): Seq[BigInt] = {
-        PoseidonModel.fixedRoundConst
+case class Message(str: String, t: Int) {
+
+    // convert normal string to 0-padded hex bytes string
+    def string2hex(): String = {
+        var ret_val = str.toList.map(_.toInt.toHexString).mkString
+        val str_len = ret_val.length
+        for(i <- 0 until 32*t - str_len){
+            ret_val = "0" + ret_val
+        }
+        val msgString = ret_val
+        msgString
     }
 
-    //TO-DO: Implement function
-    def genMDSMtx(): Seq[Seq[BigInt]] = {            
-        PoseidonModel.fixedMDS
+    // convert hex bytes string into ArrayBuffer for stateVec
+    def string2Chunks(): ArrayBuffer[BigInt] = {
+        val msgChunks: ArrayBuffer[BigInt] = new ArrayBuffer[BigInt]() ++ Seq.fill(t)(BigInt(0))
+
+        val msgString = string2hex()
+
+        (0 until t).foreach( i => msgChunks(i) = BigInt(msgString.substring(i*32, (i+1)*32), 16))
+        msgChunks
+    }
+
+    // convert string to int for Poseidon IO input
+    def string2BigInt(): BigInt = {
+        val ret_val = str.toList.map(_.toInt.toHexString).mkString
+        BigInt(ret_val, 16)
+    }
+
+    //Converting ArrayBuffer into BigInt for Poseidon IO output
+    def chunks2BigInt(msgChunks: ArrayBuffer[BigInt]): BigInt = {
+        var ret_val: String = ""
+        val str_array: ArrayBuffer[String] = new ArrayBuffer[String]() ++ Seq.fill(t)("")
+        (0 until t) foreach( i => str_array(i) = msgChunks(i).toString(16))
+        
+        for(i <- 0 until t){
+            val str_len = str_array(i).length()
+            for(j <- 0 until 32 - str_len){
+                str_array(i) = "0" + str_array(i)
+            }
+        }
+    
+        (0 until t) foreach( i => ret_val += str_array(i))
+        BigInt(ret_val, 16)
     }
 }
 
@@ -116,14 +148,16 @@ class PoseidonModel(p: PoseidonParams){
     
     var stateVec: ArrayBuffer[BigInt] = new ArrayBuffer[BigInt]() ++ Seq.fill(p.t)(BigInt(0))
     
-    def apply(in_words: Seq[BigInt]): ArrayBuffer[BigInt] = {
-        require(in_words.length == p.t)
+    def apply(msg: Message): BigInt = {
+        
+        val in_chunks = msg.string2Chunks()   
+        require(in_chunks.length == p.t)
 
         //Initializing state vec
-        (0 until p.t).foreach(i => this.stateVec(i) = in_words(i))
+        (0 until p.t).foreach(i => this.stateVec(i) = in_chunks(i))
 
         //Calling Permutation function to generate hash
-        this.stateVec = PoseidonModel.Permutation(p, this.stateVec)            
-        this.stateVec
+        this.stateVec = PoseidonModel.Permutation(p, this.stateVec) 
+        msg.chunks2BigInt(this.stateVec)           
     }
 }
