@@ -15,14 +15,12 @@ object Poseidon {
     val defParams = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5)
 
     //Collapse Seq[UInt] to single UInt
-    def collapseSeq(m : Seq[UInt]): UInt = m.tail.foldLeft(m.head) { case(a, b)  => Cat(b, a) }
+    def collapseSeq(m : Seq[UInt]): UInt = m.tail.foldLeft(m.head) { case(a, b)  => Cat(a, b) }
 }
 
 
 class PoseidonIO(p: PoseidonParams) extends Bundle {
-    //require (p.msgLen == 128, "FUTURE: accept msgLen != 128B")
     val msg = Flipped(Decoupled(UInt((p.msgLen * 8).W)))
-    //val msgBytes = Input(UInt(128.W)) // 128-bit t
     val digest = Decoupled(UInt((p.hashLen * 8).W)) 
     override def cloneType = (new PoseidonIO(p)).asInstanceOf[this.type]
 }
@@ -108,7 +106,6 @@ class Poseidon(p: PoseidonParams=Poseidon.defParams) extends Module {
       }
 
       is(Poseidon.rpRounds){
-        //printf("Roundcycle: %d\n", roundCycles)
         //Partial rounds
         when(roundCycles === 0.U){
           //Add round constants
@@ -128,7 +125,6 @@ class Poseidon(p: PoseidonParams=Poseidon.defParams) extends Module {
         }
 
         when(partialRoundDone){
-          //(0 until p.t).foreach(i => stateVec(i) := stateVec(i) % Poseidon.prime)
           state := Poseidon.secondRf
         }.otherwise{
           state := Poseidon.rpRounds
@@ -157,7 +153,6 @@ class Poseidon(p: PoseidonParams=Poseidon.defParams) extends Module {
         }
 
         when(fullRoundDone){
-          //(0 until p.t).foreach(i => stateVec(i) := workVec(i) % Poseidon.prime)
           state := Poseidon.idle
         }.otherwise{
           state := Poseidon.secondRf
