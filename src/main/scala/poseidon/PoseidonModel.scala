@@ -136,12 +136,12 @@ case class Message(str: String, t: Int) {
         
         for(i <- 0 until t){
             val str_len = str_array(i).length()
-            for(j <- 0 until 32 - str_len){
+            for(j <- 0 until 2*32 - str_len){
                 str_array(i) = "0" + str_array(i)
             }
         }
-    
         (0 until t) foreach( i => ret_val += str_array(i))
+        require(ret_val.length == 2*t*32)
         BigInt(ret_val, 16)
     }
 }
