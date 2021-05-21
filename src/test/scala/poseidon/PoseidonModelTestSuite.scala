@@ -60,11 +60,11 @@ class MessageTester extends FreeSpec with ChiselScalatestTester {
         assert(msg.string2BigInt() == exp_out)
     }
 
-    "Message should convert final, hashed stateVec of 3, 32B chunks into output string" in {
+    "Message should convert final, hashed stateVec of 3, 32B chunks into BigInt" in {
         val msg = Message("chisel", 3)
-        val stateVec = msg.string2Chunks()
-        //val stateVec = ArrayBuffer(BigInt(0), BigInt(1), BigInt(2))
-        val exp_out = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000063686973656c"
-        assert(msg.chunks2String(stateVec) == exp_out)
+        //val stateVec = msg.string2Chunks()
+        val stateVec = ArrayBuffer(BigInt(0), BigInt(1), BigInt(2))
+        val exp_out = BigInt("63686973656c", 16)
+        assert(msg.chunks2BigInt(stateVec) == exp_out)
     }
 }
