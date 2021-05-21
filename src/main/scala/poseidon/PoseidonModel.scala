@@ -74,7 +74,7 @@ object PoseidonModel{
     //modified matMul to return proper output format
     def grabCol(m: Seq[Seq[BigInt]], i: Int) = m map { _(i) }
 
-    def dotP(a: Seq[BigInt], b: Seq[BigInt]) = a.zip(b).map{ case (x,y) => (x * y)}.sum % prime
+    def dotP(a: Seq[BigInt], b: Seq[BigInt]) = a.zip(b).map{ case (x,y) => (x * y) }.sum % prime
     
     def matMul(p: PoseidonParams, a: Seq[Seq[BigInt]], b: Seq[Seq[BigInt]]): ArrayBuffer[BigInt] = {
         val mtx_prod: Seq[Seq[BigInt]] = Seq.tabulate(a.size, b.head.size){ case (i,j) => dotP(a(i), grabCol(b,j)) }
@@ -92,8 +92,8 @@ case class PoseidonParams(r: Int, c: Int, Rf: Int, Rp: Int, alpha: Int, t: Int =
     val m = r + c
     require(Rf % 2 == 0)
     
-    //val msgLen = t * 32 
-    //val hashLen = t * 32 
+    val msgLen = t * 32 
+    val hashLen = t * 32 
     val num_rounds = Rf + Rp
     val out_size = c
     //require(out_size < r)
@@ -125,7 +125,7 @@ case class Message(str: String, t: Int) {
     // convert string to int for Poseidon IO input
     def string2BigInt(): BigInt = {
         val ret_val = str.toList.map(_.toInt.toHexString).mkString
-        BigInt(ret_val, 16)
+        if(ret_val.isEmpty) BigInt(0) else BigInt(ret_val, 16)
     }
 
     //Converting ArrayBuffer into BigInt for Poseidon IO output
