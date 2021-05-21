@@ -68,7 +68,7 @@ class Poseidon(p: PoseidonParams=Poseidon.defParams) extends Module {
       is(Poseidon.loading){
         //Single cycle transfer for now  
         msg := io.msg.bits
-        stateVec := VecInit((0 until p.t).map(i => io.msg.bits((i+1)*256 - 1, i*256)))
+        stateVec := VecInit((0 until p.t).map(i => io.msg.bits((i+1)*256 - 1, i*256)).reverse)
         for(i <- 0 until p.t){
           for(j <- 0 until p.t){
             MDSMtx(i.U)(j.U) := PoseidonModel.fixedMDS(i)(j).U
