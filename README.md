@@ -4,7 +4,7 @@ Poseidon Hash Hardware Generator
 
 #### Steps to Run
 
-Once the repo has been cloned and you are in the top-level directory, simply type **sbt test** in your terminal and all the written test cases will run. 
+Once the repo has been cloned and you are in the top-level directory, simply enter **sbt test** in your terminal and all the written test cases will run. 
 
 ### Completed Feature Documentation
 Currently, the completed features include a working Scala model which takes in an arbitrary string as an input
