@@ -45,10 +45,10 @@ class PoseidonModelTester extends FreeSpec with ChiselScalatestTester {
         val m = Message("", t = p.t)
 
         val hash = new PoseidonModel(p)
-        val enc_val: ArrayBuffer[BigInt] = hash(m)
+        val enc_val: BigInt = hash(m)
 
-        val exp_out = ArrayBuffer(BigInt("2098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864", 16), BigInt("13a545a13f1d91dddb87f46679dfaec0900ce24791a924bee7fa4d69a9569d85", 16), BigInt("06be479e5fcd717c6c21b32f108033bf1da6cf4d8e3e8c48042c475e0b121480", 16))
-        assert(enc_val == exp_out)
+        val exp_out = "12355520945737335668448786259451084468882451885293116613217225007337752339551715030207335048388127702975626712038535051528421691531278097647456639937249589494100821825460935329207646624730828524885046354317368372269066971260261504"
+        assert(enc_val.toString == exp_out)
     }
 
     "Software PoseidonModel should compute correct hash of 'abc'" in {
@@ -56,10 +56,10 @@ class PoseidonModelTester extends FreeSpec with ChiselScalatestTester {
         val m = Message("abc", t = p.t)
 
         val hash = new PoseidonModel(p)
-        val enc_val: ArrayBuffer[BigInt] = hash(m)
+        val enc_val: BigInt = hash(m)
 
-        val exp_out = ArrayBuffer(BigInt("2f91353f9fbde8590825cb6b0c0396336e1d2bbe1a8f444e68e5aa5dff59f7fd", 16), BigInt("24e7ef2e211d4f4f7bfeb6521f06308a433a2f5ea4c39eef6ee66d39d235d72e", 16), BigInt("1fee6a6576e68646d304103398c9eb0d66115ca24fe2eefb282abdc5350d65f4", 16))
-        assert(enc_val == exp_out)
+        val exp_out = "288472530165565618859032654869442734644388118676745616022880934313018061647186325057982985611162619606922082564842439795167759984159416029837695261752759370132598963414891667630524813778002142387526219195492313182143215684994033140"
+        assert(enc_val.toString == exp_out)
     }
 
     "Software PoseidonModel should compute correct hash of 'Chisel is too much fun!'" in {
@@ -67,10 +67,10 @@ class PoseidonModelTester extends FreeSpec with ChiselScalatestTester {
         val m = Message("Chisel is too much fun!", t = p.t)
 
         val hash = new PoseidonModel(p)
-        val enc_val: ArrayBuffer[BigInt] = hash(m)
+        val enc_val: BigInt = hash(m)
 
-        val exp_out = ArrayBuffer(BigInt("06be10bf31fce4c8a8d686f3f48b7dc16f378df97a093f13f7ebfa9d8796e73c", 16), BigInt("0ff2e5684842d277b7adbaf9b07af9764e0071262b4aebcd01b87f0352a64435", 16), BigInt("0a868ecb2af41ddfeb272dce9ec103f25fe8a48ac54e659a935b9658227c82cd", 16))
-        assert(enc_val == exp_out)
+        val exp_out = "159725415052225380339473668258441028634255279262608334810553677060218555514073284462665698481668892706713873154559898592062518746434821015381621995083330783335499631079703775658844200735925559407991228802077210177615795987448525"
+        assert(enc_val.toString == exp_out)
     }
 }
 
