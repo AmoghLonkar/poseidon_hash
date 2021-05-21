@@ -7,12 +7,17 @@ Poseidon Hash Hardware Generator
 Once the repo has been cloned and you are in the top-level directory, simply enter **sbt test** in your terminal and all the written test cases will run. 
 
 ### Completed Feature Documentation
-Currently, the completed features include a working Scala model which takes in an arbitrary string as an input
-and computes the hash by performing multiple rounds of the three step permutation function listed in the paper.
+Currently, the completed features include:
+* working Scala model which takes in an arbitrary string as an input and computes the hash by performing multiple rounds of the three step permutation function listed in the paper.
 
-Our Chisel implementation of the hardware generator can also perform the above hash for a fixed number of rounds and fixed alpha. 
+* Chisel implementation of the hardware generator for Poseidon Permutation x5_254_3. 
 
-### Work In Progress
-We are working on building the model and a generator for a Merkle tree. In this Merkle tree, each parent node will be computed by hashing 
+### Work In Progress 
+* building the model and a generator for a Merkle tree. In this Merkle tree, each parent node will be computed by hashing 
 and merging it's child nodes. We plan on multi-layer 2-to-1 or 4-to-1 tree and allow for various parallelization schemes for computing the 
 parent nodes.
+
+* various optimizations for the existing generators. These include parallelized matrix multiplication for the Mix layer and more efficient modular
+arithmetic.
+
+* allow for different t-values in permutation. This will result in support for multiple hashes in the Poseidon family.
