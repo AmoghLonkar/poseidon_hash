@@ -65,7 +65,7 @@ object PoseidonModel{
         }
         
         //Mix
-        val newStateVec = matMul(p, p.mds_mtx, (0 until p.t) map (i => Seq.fill(1)(workVec(i))))
+        val newStateVec = matMul(p, fixedMDS, (0 until p.t) map (i => Seq.fill(1)(workVec(i))))
 
         newStateVec
     }
