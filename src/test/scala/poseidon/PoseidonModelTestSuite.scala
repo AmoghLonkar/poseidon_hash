@@ -18,8 +18,8 @@ class PoseidonModelTester extends FreeSpec with ChiselScalatestTester {
         val exp_out = ArrayBuffer[BigInt]()
         (0 until p.t).foreach(i => exp_out += BigInt(raw_out(i)))
         assert(PoseidonModel.roundFunction(p, v, true, 0) == exp_out)
-
     }
+
     "Software half round should work" in {
         val v = ArrayBuffer(BigInt(0),BigInt(1),BigInt(2))
         val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5)
@@ -27,7 +27,6 @@ class PoseidonModelTester extends FreeSpec with ChiselScalatestTester {
         val exp_out = ArrayBuffer[BigInt]()
         (0 until p.t).foreach(i => exp_out += BigInt(raw_out(i)))
         assert(PoseidonModel.roundFunction(p, v, false, 0) == exp_out)
-
     }
 
     "Software Permutation should work" in {
@@ -47,7 +46,7 @@ class PoseidonModelTester extends FreeSpec with ChiselScalatestTester {
         val hash = new PoseidonModel(p)
         val enc_val: BigInt = hash(m)
 
-        val exp_out = "12355520945737335668448786259451084468882451885293116613217225007337752339551715030207335048388127702975626712038535051528421691531278097647456639937249589494100821825460935329207646624730828524885046354317368372269066971260261504"
+        val exp_out = "197688335131797370695180580151217351502119230164689865811475600117404037432827440483317360774210043247610027392616560824454747064500449562359306238995993386154528235824338843606202069182854679258815511457002223009305442195885659264"
         assert(enc_val.toString == exp_out)
     }
 
@@ -69,7 +68,7 @@ class PoseidonModelTester extends FreeSpec with ChiselScalatestTester {
         val hash = new PoseidonModel(p)
         val enc_val: BigInt = hash(m)
 
-        val exp_out = "159725415052225380339473668258441028634255279262608334810553677060218555514073284462665698481668892706713873154559898592062518746434821015381621995083330783335499631079703775658844200735925559407991228802077210177615795987448525"
+        val exp_out = "40889706253369697366905259074160903330369351491227733711501741327415950211590231215735875697138321725719499543319040191936040266764279101902900717528773868310861696054184087142007805297686695551008346339475850947316803776894763725"
         assert(enc_val.toString == exp_out)
     }
 }
