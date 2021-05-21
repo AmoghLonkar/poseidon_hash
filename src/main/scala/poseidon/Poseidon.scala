@@ -50,8 +50,8 @@ class Poseidon(p: PoseidonParams=Poseidon.defParams) extends Module {
     val (index, indexDone) = Counter(0 until p.t*(p.Rf + p.Rp) by p.t, roundDone)
     
     //MatMul Counters
-    val (kCycles, kDone) = Counter(0 until p.t, true.B, roundCycles === 2.U)
-    val (rCycles, rDone) = Counter(0 until p.t, kDone)
+    val (kCycles, kDone) = Counter(0 until p.t, true.B, roundCycles === 1.U)
+    val (rCycles, rDone) = Counter(0 until p.t, kDone, roundCycles === 1.U)
     
     val (tCycles, tDone) = Counter(0 until p.t*p.t, (state === Poseidon.firstRf) || (state === Poseidon.rpRounds) || (state === Poseidon.secondRf), roundCycles === 2.U)
     
@@ -84,22 +84,23 @@ class Poseidon(p: PoseidonParams=Poseidon.defParams) extends Module {
       
       is(Poseidon.firstRf){
         //First Rf/2 full rounds
-        when(fullCycles === 0.U){
+        when(roundCycles === 0.U){
           //Add round constants
           for(i <- 0 until p.t){
-            stateVec(i.U) := stateVec(i.U) + roundConst(i.U + index)
+            stateVec(i.U) := stateVec(i.U) + roundConst(i.U + index) % Poseidon.prime
           }
-        }.elsewhen(fullCycles === 1.U){
+        }.elsewhen(roundCycles === 1.U){
           //S-box layer
           stateVec := stateVec.map(i => Seq.fill(p.alpha)(i).reduce(_*_) % Poseidon.prime)
-          workVec := stateVec.map(i => Seq.fill(p.alpha)(i).reduce(_*_) % Poseidon.prime)
-        }.otherwise{
-          //Mix: Matrix Multiplication Step
-          workVec(rCycles) := workVec(rCycles) + (MDSMtx(rCycles)(kCycles) * stateVec(kCycles))
+          workVec := (0 until p.t).map(i => 0.U)
+        }.elsewhen(roundCycles === 2.U + p.t.U*p.t.U){
+          (0 until p.t).foreach(i => stateVec(i) := workVec(i) % Poseidon.prime)
+        }
+        .otherwise{
+          workVec(rCycles) := workVec(rCycles) + (MDSMtx(rCycles)(kCycles) * stateVec(kCycles))%Poseidon.prime
         }
         
         when(fullRoundDone){
-          (0 until p.t).foreach(i => stateVec(i) := stateVec(i) % Poseidon.prime)
           state := Poseidon.rpRounds
         }.otherwise{
           state := Poseidon.firstRf
@@ -107,55 +108,64 @@ class Poseidon(p: PoseidonParams=Poseidon.defParams) extends Module {
       }
 
       is(Poseidon.rpRounds){
+        //printf("Roundcycle: %d\n", roundCycles)
         //Partial rounds
-        when(fullCycles === 0.U){
+        when(roundCycles === 0.U){
           //Add round constants
           for(i <- 0 until p.t){
-            stateVec(i.U) := stateVec(i.U) + roundConst(i.U + index)
+            stateVec(i.U) := (stateVec(i.U) + roundConst(i.U + index)) % Poseidon.prime
           }
-        }.elsewhen(fullCycles === 1.U){
+        }.elsewhen(roundCycles === 1.U){
           //S-box layer
           stateVec := stateVec.map(i => if( i == stateVec.head) Seq.fill(p.alpha)(i).reduce(_*_) % Poseidon.prime else i)
-          workVec := stateVec.map(i => if( i == workVec.head) Seq.fill(p.alpha)(i).reduce(_*_) % Poseidon.prime else i)
-        }.otherwise{
+          workVec := (0 until p.t).map(i => 0.U)
+        }.elsewhen(roundCycles === 2.U + p.t.U*p.t.U){
+          (0 until p.t).foreach(i => stateVec(i) := workVec(i) % Poseidon.prime)
+        }
+        .otherwise{
           //Mix: Matrix Multiplication Step
-          workVec(rCycles) := workVec(rCycles) + (MDSMtx(rCycles)(kCycles) * stateVec(kCycles))
+          workVec(rCycles) := workVec(rCycles) + (MDSMtx(rCycles)(kCycles) * stateVec(kCycles)) % Poseidon.prime
         }
 
         when(partialRoundDone){
-          (0 until p.t).foreach(i => stateVec(i) := stateVec(i) % Poseidon.prime)
+          //(0 until p.t).foreach(i => stateVec(i) := stateVec(i) % Poseidon.prime)
           state := Poseidon.secondRf
         }.otherwise{
           state := Poseidon.rpRounds
         }
+
       }
 
       is(Poseidon.secondRf){
-        
+
         //Last Rf/2 full rounds
-        when(fullCycles === 0.U){
+        when(roundCycles === 0.U){
           //Add round constants
           for(i <- 0 until p.t){
-            stateVec(i.U) := stateVec(i.U) + roundConst(i.U + index)
+            stateVec(i.U) := (stateVec(i.U) + roundConst(i.U + index)) % Poseidon.prime
           }
-        }.elsewhen(fullCycles === 1.U){
+        }.elsewhen(roundCycles === 1.U){
           //S-box layer
           stateVec := stateVec.map(i => Seq.fill(p.alpha)(i).reduce(_*_) % Poseidon.prime)
-          workVec := stateVec.map(i => Seq.fill(p.alpha)(i).reduce(_*_) % Poseidon.prime)
-        }.otherwise{
+          workVec := (0 until p.t).map(i => 0.U)
+        }.elsewhen(roundCycles === 2.U + p.t.U*p.t.U){
+          (0 until p.t).foreach(i => stateVec(i) := workVec(i) % Poseidon.prime)
+        }
+        .otherwise{
           //Mix: Matrix Multiplication Step
-          workVec(rCycles) := workVec(rCycles) + (MDSMtx(rCycles)(kCycles) * stateVec(kCycles))
+          workVec(rCycles) := workVec(rCycles) + (MDSMtx(rCycles)(kCycles) * stateVec(kCycles))  % Poseidon.prime
         }
 
         when(fullRoundDone){
-          (0 until p.t).foreach(i => stateVec(i) := workVec(i) % Poseidon.prime)
+          //(0 until p.t).foreach(i => stateVec(i) := workVec(i) % Poseidon.prime)
           state := Poseidon.idle
         }.otherwise{
           state := Poseidon.secondRf
         }
       }
     }
-    
+
+
     io.digest.valid := RegNext(done)
     io.digest.bits := Poseidon.collapseSeq(stateVec)
 }
