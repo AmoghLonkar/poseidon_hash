@@ -164,14 +164,16 @@ class PoseidonModel(p: PoseidonParams){
     
     var stateVec: ArrayBuffer[BigInt] = new ArrayBuffer[BigInt]() ++ Seq.fill(p.t)(BigInt(0))
     
-    def apply(in_words: ArrayBuffer[BigInt]): ArrayBuffer[BigInt] = {
-        require(in_words.length == p.t)
+    def apply(msg: Message): BigInt = {
+        
+        val in_chunks = msg.string2Chunks()
+        require(in_chunks == p.t)
 
         //Initializing state vec
-        (0 until p.t).foreach(i => this.stateVec(i) = in_words(i))
+        (0 until p.t).foreach(i => this.stateVec(i) = in_chunks(i))
 
         //Calling Permutation function to generate hash
         this.stateVec = PoseidonModel.Permutation(p, this.stateVec)            
-        this.stateVec
+        msg.chunks2BigInt(this.stateVec)
     }
 }
