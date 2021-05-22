@@ -17,7 +17,6 @@ Currently, the completed features include:
 and merging it's child nodes. We plan on multi-layer 2-to-1 or 4-to-1 tree and allow for various parallelization schemes for computing the 
 parent nodes.
 
-* various optimizations for the existing generators. These include parallelized matrix multiplication for the Mix layer and more efficient modular
-arithmetic.
+* various optimizations for the existing generators. These include more efficient modular arithmetic and multi-cycle input transfer.
 
 * allow for different t-values in permutation. This will result in support for multiple hashes in the Poseidon family.
