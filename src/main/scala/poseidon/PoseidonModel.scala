@@ -88,7 +88,7 @@ object PoseidonModel{
     }
 }
 
-case class PoseidonParams(r: Int, c: Int, Rf: Int, Rp: Int, alpha: Int, t: Int = 3){
+case class PoseidonParams(r: Int, c: Int, Rf: Int, Rp: Int, alpha: Int, t: Int = 3, parallelism: Int = 1){
     val m = r + c
     require(Rf % 2 == 0)
     
@@ -96,7 +96,7 @@ case class PoseidonParams(r: Int, c: Int, Rf: Int, Rp: Int, alpha: Int, t: Int =
     val hashLen = t * 32 
     val num_rounds = Rf + Rp
     val out_size = c
-    //require(out_size < r)
+    require(parallelism == 1 || parallelism == t)
 }
 
 case class Message(str: String, t: Int) {
@@ -105,7 +105,7 @@ case class Message(str: String, t: Int) {
     def string2hex(): String = {
         var ret_val = str.toList.map(_.toInt.toHexString).mkString
         val str_len = ret_val.length
-        for(i <- 0 until 32*t - str_len){
+        for(i <- 0 until 2*32*t - str_len){
             ret_val = "0" + ret_val
         }
         val msgString = ret_val
@@ -118,7 +118,7 @@ case class Message(str: String, t: Int) {
 
         val msgString = string2hex()
 
-        (0 until t).foreach( i => msgChunks(i) = BigInt(msgString.substring(i*32, (i+1)*32), 16))
+        (0 until t).foreach( i => msgChunks(i) = BigInt(msgString.substring(i*32*2, (i+1)*32*2), 16))
         msgChunks
     }
 
