@@ -8,8 +8,9 @@ case class MerkleParams(p: PoseidonParams, numChild: Int = 2){
 }
 
 
-class Node(m: MerkleParams, data: BigInt, child: Int) {
-    var data = data
+class Node(m: MerkleParams, data: Message, child: Int) {
+    val hashFn = new PoseidonModel(m.p)
+    val hash = hashFn(data)
 }
 
 object MerkleTreeModel{
@@ -20,15 +21,10 @@ object MerkleTreeModel{
         //Initialize tree
         val tree = new ArrayBuffer[Node]()
         val numNodes: Int = (0 to log2ceil(leafData.size)).map( i => (leafData.size/pow(m.numChild, i)).ceil).sum.toInt
-        (0 until numNodes).foreach(i => tree += Node(m, BigInt(0), ))
+        (0 until numNodes).foreach(i => if(i < numNodes - inputs.size) { tree += Node(m, Message("", m.p.t), Seq.tabulate(m.numChild)(j => m.numChild*i + j+1)) } else { tree += Node(m, inputs(i+1 - inputs.size), Seq.fill(1)(i)) })
 
-        //Get Hash values of each input and convert to leaf nodes
-        val hashList = Seq.fill(inputs.size)(new PoseidonModel(m.p))
-        val leafData = hashList.zip(inputs).map { case(a, b) => a(b) }
-
-        (0 until inputs.size).foreach(i => tree(i).data = leafData(i))
-
-        //Iterate up the tree to get 
+        //Iterate up the tree to get final hash
+        
     }
 }
 
