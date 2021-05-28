@@ -9,7 +9,7 @@ case class MerkleParams(p: PoseidonParams, numChild: Int = 2){
 }
 
 
-case class Node(m: MerkleParams, data: Message, children: Seq[Int]) {
+case class Node(m: MerkleParams, var data: Message, children: Seq[Int]) {
     val hashFn = new PoseidonModel(m.p)
     val hash = hashFn(data)
 }
