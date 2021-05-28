@@ -25,6 +25,13 @@ object MerkleTreeModel{
         (0 until numNodes).foreach(i => if(i < numNodes - inputs.size) { tree += Node(m, Message("", m.p.t), Seq.tabulate(m.numChild)(j => m.numChild*i + j+1)) } else { tree += Node(m, inputs(i+1 - inputs.size), Seq.fill(1)(i)) })
 
         //Iterate up the tree to get final hash
+        for(i <- numNodes - inputs.size - 1 to 0 by -1){
+            val hashList = new ArrayBuffer[String]()
+            tree(i).children.map { j =>hashList += tree(j).hash.toString}
+            val inString: String = hashList.mkString("")
+            tree(i).data = Message(inString, m.p.t)
+        }
+
         tree 
     }
 }
