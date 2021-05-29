@@ -28,7 +28,7 @@ class MerkleTreeModelTester extends FreeSpec with ChiselScalatestTester {
         val final_perm = new PoseidonModel(p)
         val exp_out: BigInt = final_perm(Message(finalIn, 3))
 
-        val m = MerkleParams(p)
+        val m = MerkleParams(p, 2)
         val mTree = new MerkleTreeModel(m)
         val model_out: BigInt = mTree(inSeq)
         assert(model_out == exp_out)
@@ -57,7 +57,7 @@ class MerkleTreeModelTester extends FreeSpec with ChiselScalatestTester {
         val final_perm = new PoseidonModel(p)
         val exp_out: BigInt = final_perm(Message(finalIn, 3))
 
-        val m = MerkleParams(p, 4)
+        val m = MerkleParams(p, 4, 4)
         val mTree = new MerkleTreeModel(m)
         val model_out: BigInt = mTree(inSeq)
         assert(model_out == exp_out)
