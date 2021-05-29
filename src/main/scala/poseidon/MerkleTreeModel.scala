@@ -27,7 +27,7 @@ object MerkleTreeModel{
         val tree = new ArrayBuffer[Node]()
         val numNodes: Int = (0 to lognceil(inputs.size, m.numChild)).map( i => (inputs.size/pow(m.numChild, i)).ceil).sum.toInt
 
-        (0 until numNodes).foreach(i => if(i < numNodes - inputs.size) { tree += Node(m, Message("", m.p.t), Seq.tabulate(m.numChild)(j => m.numChild*i + j+1)) } else { tree += Node(m, inputs(i - 1), Seq.fill(1)(i)) })
+        (0 until numNodes).foreach(i => if(i < numNodes - inputs.size) { tree += Node(m, Message("", m.p.t), Seq.tabulate(m.numChild)(j => m.numChild*i + j+1)) } else { tree += Node(m, inputs(i - (inputs.size - m.numChild) - 1), Seq.fill(1)(i)) })
         //Iterate up the tree to get final hash
         for(i <- numNodes - inputs.size - 1 to 0 by -1){
             val hashList = new ArrayBuffer[String]()
