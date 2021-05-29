@@ -38,8 +38,13 @@ class MerkleTree(m: MerkleParams) extends Module {
     //To hold inputs to leaf nodes
     val inSeq = Reg(Vec(m.numInputs, UInt((m.p.msgLen*8).W)))
 
-    //Register to hold tree
-    val tree = Reg(Vec(m.numNodes, Module(new HWNode(m))))
+    //Tree as a vector of nodes
+    val tree = for (i <- 0 until m.numNodes) yield
+    {
+        val node = Module(new HWNode(m))
+        node
+    }   
+
     //Counter initialization
     val (loadingCount, loadingDone) = Counter(0 until m.numInputs, state === MerkleTree.loading)
 
