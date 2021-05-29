@@ -82,7 +82,6 @@ object PoseidonModel{
             workVec = roundFunction(p, workVec, true, index)
             index += p.t 
         }
-        print
         //Partial rounds
         for(i <- 0 until p.Rp){
             workVec = roundFunction(p, workVec, false, index)
