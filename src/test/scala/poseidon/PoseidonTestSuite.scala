@@ -27,8 +27,25 @@ import chisel3.tester.experimental.TestOptionBuilder._
         true
     }
 
-    "Hardware Poseidon module should compute correct hash of ''" in {
+    "Hardware Poseidon 254 t3 module should compute correct hash of ''" in {
         val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5)
+        val m = Message("", p.t)
+        testPoseidon(p, m) 
+    }
+    "Hardware Poseidon 254 t5 module should compute correct hash of ''" in {
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 60, alpha = 5, t = 5, parallelism = 5)
+        val m = Message("", p.t)
+        testPoseidon(p, m) 
+    }
+
+    "Hardware Poseidon 255 t3 module should compute correct hash of ''" in {
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, bits = 255)
+        val m = Message("", p.t)
+        testPoseidon(p, m) 
+    }
+
+    "Hardware Poseidon 255 t5 module should compute correct hash of ''" in {
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, t = 5, bits = 255, parallelism = 5)
         val m = Message("", p.t)
         testPoseidon(p, m) 
     }
