@@ -12,7 +12,7 @@ object MerkleTree {
 }
 
 class HWNodeIO(m: MerkleParams) extends Bundle {
-    val in_data: UInt = Input(UInt((m.p.hashLen * 8).W))
+    val in_data: UInt = Input(UInt())
     val children = Input(Vec(m.numChild, UInt((log2Ceil(m.numNodes)).W)))
     val hash: UInt = Output(UInt((m.p.hashLen * 8).W))
     val hashReady: Bool = Output(Bool())
