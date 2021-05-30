@@ -64,7 +64,7 @@ class MerkleTree(m: MerkleParams) extends Module {
     val (cycles, done) = Counter(0 until (m.numNodes - 1)*((m.p.Rf + m.p.Rp)*(3 + m.p.t*m.p.t/m.p.parallelism)), state === MerkleTree.hashing)
     val (loadingCount, loadingDone) = Counter(0 until m.numInputs, state === MerkleTree.loading)
     val (hashCount, hashDone) = Counter(0 until ((m.p.Rf + m.p.Rp)*(3 + m.p.t*m.p.t/m.p.parallelism)), state === MerkleTree.hashing)
-    val (nodeCount, nodesDone) = Counter(0 until m.numNodes - 1, hashDone && (state === MerkleTree.hashing))
+    val (nodeCount, nodesDone) = Counter(m.numNodes - 1 to 0 by -1, hashDone && (state === MerkleTree.hashing))
     switch(state){
         is(MerkleTree.idle) {
             inSeq := VecInit(Seq.fill(m.numInputs)(0.U))
@@ -90,7 +90,7 @@ class MerkleTree(m: MerkleParams) extends Module {
 
         is(MerkleTree.hashing){
             //Wait for hash to compute
-            when(tree_io(nodeCount).hashReady && tree_io(nodeCount + 1.U).hashReady){
+            when(tree_io(nodeCount).hashReady && tree_io(nodeCount - 1.U).hashReady){
                 tree_io(0).in_data := Cat(tree_io(1).hash, tree_io(2).hash)
             }
             when(nodesDone){
