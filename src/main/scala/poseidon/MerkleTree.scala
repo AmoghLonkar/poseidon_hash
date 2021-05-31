@@ -13,6 +13,7 @@ object MerkleTree {
 
 class HWNodeIO(m: MerkleParams) extends Bundle {
     val in_data: UInt = Input(UInt())
+    val dataReady: Bool = Input(Bool())
     val children = Input(Vec(m.numChild, UInt((log2Ceil(m.numNodes)).W)))
     val hash: UInt = Output(UInt((m.p.hashLen * 8).W))
     val hashReady: Bool = Output(Bool())
@@ -22,7 +23,9 @@ class HWNode (m: MerkleParams) extends Module {
     val io = IO(new HWNodeIO(m))
 
     val permutation = Module(new Poseidon(m.p))
-    permutation.io.msg.valid := true.B
+    
+    //permutation.io.msg.valid := true.B
+    permutation.io.msg.valid := io.dataReady
     val inReady = permutation.io.msg.ready
     permutation.io.msg.bits := io.in_data 
     permutation.io.digest.ready := true.B
@@ -56,9 +59,15 @@ class MerkleTree(m: MerkleParams) extends Module {
     tree_io(0).children := VecInit(Seq(1.U, 2.U))
     tree_io(1).children := VecInit(Seq(1.U, 1.U))
     tree_io(2).children := VecInit(Seq(2.U, 2.U))
-    tree_io(0).in_data := 0.U
+    //tree_io(0).in_data := 0.U
     tree_io(1).in_data := 0.U
     tree_io(2).in_data := 0.U
+    val outbits = RegInit(0.U((m.p.msgLen*8).W))
+    tree_io(0).in_data := outbits
+
+    tree_io(0).dataReady := 0.B
+    tree_io(1).dataReady := 0.B
+    tree_io(2).dataReady := 0.B
 
     //Counter initialization
     val (cycles, done) = Counter(0 until (m.numNodes - 1)*((m.p.Rf + m.p.Rp)*(3 + m.p.t*m.p.t/m.p.parallelism)), state === MerkleTree.hashing)
@@ -78,7 +87,7 @@ class MerkleTree(m: MerkleParams) extends Module {
 
         is(MerkleTree.loading){
 
-            tree_io(loadingCount + 1.U).in_data := io.msg.bits
+            //tree_io(loadingCount + 1.U).in_data := io.msg.bits
             inSeq(loadingCount) := io.msg.bits
 
             when(loadingDone){
@@ -90,8 +99,15 @@ class MerkleTree(m: MerkleParams) extends Module {
 
         is(MerkleTree.hashing){
             //Wait for hash to compute
+            tree_io(1).in_data :=inSeq(0)
+            tree_io(2).in_data :=inSeq(1)
+            tree_io(0).dataReady := 1.B
+            tree_io(1).dataReady := 1.B
+            tree_io(2).dataReady := 1.B
             when(tree_io(nodeCount).hashReady && tree_io(nodeCount - 1.U).hashReady){
-                tree_io(0).in_data := Cat(tree_io(1).hash, tree_io(2).hash)
+                //tree_io(0).in_data := Cat(tree_io(1).hash, tree_io(2).hash)
+                //outbits:= Cat(tree_io(1).hash, tree_io(2).hash)
+                outbits:= tree_io(1).hash ^ tree_io(2).hash
             }
             when(nodesDone){
                 state := MerkleTree.idle

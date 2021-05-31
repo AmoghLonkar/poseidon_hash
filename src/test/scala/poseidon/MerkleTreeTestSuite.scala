@@ -21,7 +21,9 @@ class MerkleTreeTester extends FreeSpec with ChiselScalatestTester {
             c.clock.step()
             c.io.msg.bits.poke(inSeq(1).string2BigInt.U)
             c.clock.step((m.numNodes - 1)*((m.p.Rf + m.p.Rp)*(3 + m.p.t*m.p.t/m.p.parallelism)))
+            c.clock.step()
             c.io.digest.valid.expect(true.B)
+            c.clock.step(4)
             c.io.digest.bits.expect(exp_out.U)
         }
         true
