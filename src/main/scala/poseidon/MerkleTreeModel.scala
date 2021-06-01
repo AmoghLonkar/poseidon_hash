@@ -30,12 +30,9 @@ object MerkleTreeModel{
         for(i <- m.numNodes - inputs.size - 1 to 0 by -1){
             val hashList = new ArrayBuffer[BigInt]
             tree(i).children.map { j =>hashList += tree(j).hash}
-            //val inString: String = hashList.mkString("")
             val inString: String = hashList.reduce{_^_}.toString
-            println(inString)
             tree(i).computeHash(Message(inString, m.p.t))
         }
-
         tree 
     }
 }
