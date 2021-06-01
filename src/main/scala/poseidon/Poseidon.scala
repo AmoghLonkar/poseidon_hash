@@ -114,9 +114,6 @@ class Poseidon(p: PoseidonParams) extends Module {
             }
           }
         
-
-
-
         state := Poseidon.firstRf
       }
 
@@ -241,8 +238,6 @@ class Poseidon(p: PoseidonParams) extends Module {
         }
       }
     }
-
-
     io.digest.valid := RegNext(done)
     io.digest.bits := Poseidon.collapseSeq(stateVec)
 
