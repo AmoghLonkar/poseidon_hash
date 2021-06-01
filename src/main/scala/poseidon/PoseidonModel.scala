@@ -190,7 +190,7 @@ case class Message(str: String, t: Int) {
 
     // convert normal string to 0-padded hex bytes string
     def string2hex(): String = {
-        var ret_val = str.toList.map(_.toInt.toHexString).mkString
+        var ret_val =  str.toList.map(_.toInt.toHexString).mkString
         val str_len = ret_val.length
         for(i <- 0 until 2*32*t - str_len){
             ret_val = "0" + ret_val
@@ -203,9 +203,18 @@ case class Message(str: String, t: Int) {
     def string2Chunks(): ArrayBuffer[BigInt] = {
         val msgChunks: ArrayBuffer[BigInt] = new ArrayBuffer[BigInt]() ++ Seq.fill(t)(BigInt(0))
 
-        val msgString = string2hex()
+        //If string is hash value from Merkle Tree
+        if(str.matches("^[0-9]*$") && str != ""){
+            val intVal = BigInt(str)
+            val ba = intVal.toByteArray
+            val chunkBytes = (0 until t) map (i => ba.slice(i*32, (i+1)*32))
+            (0 until t) foreach(i => msgChunks(i) = BigInt(chunkBytes(i))) 
+        }
+        else{
+            val msgString = string2hex()
+            (0 until t).foreach( i => msgChunks(i) = BigInt(msgString.substring(i*32*2, (i+1)*32*2), 16))
+        }
 
-        (0 until t).foreach( i => msgChunks(i) = BigInt(msgString.substring(i*32*2, (i+1)*32*2), 16))
         msgChunks
     }
 
@@ -239,7 +248,7 @@ class PoseidonModel(p: PoseidonParams){
     
     def apply(msg: Message): BigInt = {
         
-        val in_chunks = msg.string2Chunks()   
+        val in_chunks = msg.string2Chunks() 
         require(in_chunks.length == p.t)
 
         //Initializing state vec
