@@ -5,6 +5,8 @@ import scala.math._
 import scala.collection.mutable.ArrayBuffer
 
 case class MerkleParams(p: PoseidonParams, numInputs: Int, numChild: Int = 2){
+    require(numChild <= numInputs)
+    require(numChild == 2 || numChild == 4)
     def lognceil(in: Int, size: Int): Int = { (log10(in)/log10(size)).ceil.toInt }
     val numNodes: Int = (0 to lognceil(numInputs, numChild)).map( i => (numInputs/pow(numChild, i)).ceil).sum.toInt
 }
@@ -25,7 +27,17 @@ object MerkleTreeModel{
         //Initialize tree
         val tree = new ArrayBuffer[Node]()
 
-        (0 until m.numNodes).foreach(i => if(i < m.numNodes - inputs.size) { tree += Node(m, Message("", m.p.t), Seq.tabulate(m.numChild)(j => m.numChild*i + j+1)) } else { tree += Node(m, inputs(i - (inputs.size - m.numChild) - 1), Seq.fill(1)(i)) })
+        //(0 until m.numNodes).foreach(i => if(i < m.numNodes - inputs.size) { tree += Node(m, Message("", m.p.t), Seq.tabulate(m.numChild)(j => m.numChild*i + j+1)) } else { tree += Node(m, inputs(i - (inputs.size - m.numChild) - 1), Seq.fill(1)(i)) })
+        
+        for(i <- 0 until m.numNodes){
+            if(i < m.numNodes - inputs.size){
+                tree += Node(m, Message("", m.p.t), Seq.tabulate(m.numChild)(j => m.numChild*i + j+1))
+            } 
+            else {
+                tree += Node(m, inputs(i - (inputs.size - m.numChild) - 1), Seq.fill(1)(i))
+            }
+        }
+        
         //Iterate up the tree to get final hash
         for(i <- m.numNodes - inputs.size - 1 to 0 by -1){
             val hashList = new ArrayBuffer[BigInt]
