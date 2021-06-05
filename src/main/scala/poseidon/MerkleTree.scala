@@ -24,7 +24,6 @@ class HWNode (m: MerkleParams) extends Module {
 
     val permutation = Module(new Poseidon(m.p))
     
-    //permutation.io.msg.valid := true.B
     permutation.io.msg.valid := io.dataReady
     val inReady = permutation.io.msg.ready
     permutation.io.msg.bits := io.in_data 
@@ -55,25 +54,28 @@ class MerkleTree(m: MerkleParams) extends Module {
     }   
     val tree_io = VecInit(tree.map(_.io))
     
-    //Make tree connections- Hard coded for now
-    tree_io(0).children := VecInit(Seq(1.U, 2.U))
-    tree_io(1).children := VecInit(Seq(1.U, 1.U))
-    tree_io(2).children := VecInit(Seq(2.U, 2.U))
-    //tree_io(0).in_data := 0.U
-    tree_io(1).in_data := 0.U
-    tree_io(2).in_data := 0.U
     val outbits = RegInit(0.U((m.p.msgLen*8).W))
-    tree_io(0).in_data := outbits
+    
+    //Make tree connections
+    for(i <- 0 until m.numNodes){
+        if(i < m.numNodes - m.numInputs){
+            tree_io(i).children := VecInit(Seq.tabulate(m.numChild)(j => (m.numChild*i + j+1).U))
+            tree_io(0).in_data := outbits
+        } 
+        else {
+            tree_io(i).children := VecInit(Seq.fill(m.numChild)(i.U))
+            tree_io(i).in_data := 0.U
+        }
 
-    tree_io(0).dataReady := 0.B
-    tree_io(1).dataReady := 0.B
-    tree_io(2).dataReady := 0.B
+        tree_io(i).dataReady := 0.B
+    }
 
     //Counter initialization
     val (cycles, done) = Counter(0 until (m.numNodes - 1)*((m.p.Rf + m.p.Rp)*(3 + m.p.t*m.p.t/m.p.parallelism)), state === MerkleTree.hashing)
     val (loadingCount, loadingDone) = Counter(0 until m.numInputs, state === MerkleTree.loading)
     val (hashCount, hashDone) = Counter(0 until ((m.p.Rf + m.p.Rp)*(3 + m.p.t*m.p.t/m.p.parallelism)), state === MerkleTree.hashing)
-    val (nodeCount, nodesDone) = Counter(m.numNodes - 1 to 0 by -1, hashDone && (state === MerkleTree.hashing))
+    val (nodeCount, nodesDone) = Counter(  m.numNodes - m.numInputs - 1 to 0 by -1, hashDone && (state === MerkleTree.hashing))
+    
     switch(state){
         is(MerkleTree.idle) {
             inSeq := VecInit(Seq.fill(m.numInputs)(0.U))
@@ -99,17 +101,31 @@ class MerkleTree(m: MerkleParams) extends Module {
 
         is(MerkleTree.hashing){
             //Wait for hash to compute
-            tree_io(1).in_data :=inSeq(0)
-            tree_io(2).in_data :=inSeq(1)
-            tree_io(0).dataReady := 1.B
-            tree_io(1).dataReady := 1.B
-            tree_io(2).dataReady := 1.B
-            when(tree_io(nodeCount).hashReady && tree_io(nodeCount - 1.U).hashReady){
-                //tree_io(0).in_data := Cat(tree_io(1).hash, tree_io(2).hash)
-                //outbits:= Cat(tree_io(1).hash, tree_io(2).hash)
-                outbits:= tree_io(1).hash ^ tree_io(2).hash
+            for(i <- 0 until m.numNodes){
+                if(i >= m.numNodes - m.numInputs){
+                    tree_io(i).in_data := inSeq(i - 1)
+                }
+
+                tree_io(i).dataReady := 1.B
             }
-            when(nodesDone){
+
+            switch(m.numChild.U){
+                is(2.U){
+                    when(tree_io(tree_io(nodeCount).children(0)).hashReady && tree_io(tree_io(nodeCount).children(1)).hashReady){
+                        outbits:= tree_io(tree_io(nodeCount).children(0)).hash ^ tree_io(tree_io(nodeCount).children(1)).hash
+                    }
+                }
+
+                is(4.U){
+                    if(m.numInputs >= 4 ){
+                        when(tree_io(tree_io(nodeCount).children(0)).hashReady && tree_io(tree_io(nodeCount).children(1)).hashReady && tree_io(tree_io(nodeCount).children(2)).hashReady && tree_io(tree_io(nodeCount).children(3)).hashReady){
+                            outbits:= tree_io(tree_io(nodeCount).children(0)).hash ^ tree_io(tree_io(nodeCount).children(1)).hash ^ tree_io(tree_io(nodeCount).children(2)).hash ^ tree_io(tree_io(nodeCount).children(3)).hash
+                        }
+                    }
+                }
+            }
+            
+            when(done){
                 state := MerkleTree.idle
             }.otherwise{
                 state := MerkleTree.hashing 
