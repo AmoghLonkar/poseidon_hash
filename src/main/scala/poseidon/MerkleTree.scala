@@ -4,7 +4,8 @@ import chisel3._
 import chisel3.util._
 
 import scala.collection.mutable.ArrayBuffer
-import scala.annotation.switch 
+import scala.annotation.switch
+import scala.math._ 
 
 object MerkleTree {
     //States
@@ -71,7 +72,8 @@ class MerkleTree(m: MerkleParams) extends Module {
     }
 
     //Counter initialization
-    val (cycles, done) = Counter(0 until (m.numNodes - 1)*((m.p.Rf + m.p.Rp)*(3 + m.p.t*m.p.t/m.p.parallelism)), state === MerkleTree.hashing)
+    val treeHeight = (log10(m.numNodes)/log10(m.numChild)).ceil.toInt
+    val (cycles, done) = Counter(0 until (treeHeight)*((m.p.Rf + m.p.Rp)*(3 + m.p.t*m.p.t/m.p.parallelism)), state === MerkleTree.hashing)
     val (loadingCount, loadingDone) = Counter(0 until m.numInputs, state === MerkleTree.loading)
     val (hashCount, hashDone) = Counter(0 until ((m.p.Rf + m.p.Rp)*(3 + m.p.t*m.p.t/m.p.parallelism)), state === MerkleTree.hashing)
     val (nodeCount, nodesDone) = Counter(  m.numNodes - m.numInputs - 1 to 0 by -1, hashDone && (state === MerkleTree.hashing))
