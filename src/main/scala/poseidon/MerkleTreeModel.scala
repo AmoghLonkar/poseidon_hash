@@ -27,8 +27,6 @@ object MerkleTreeModel{
         //Initialize tree
         val tree = new ArrayBuffer[Node]()
 
-        //(0 until m.numNodes).foreach(i => if(i < m.numNodes - inputs.size) { tree += Node(m, Message("", m.p.t), Seq.tabulate(m.treeRadix)(j => m.treeRadix*i + j+1)) } else { tree += Node(m, inputs(i - (inputs.size - m.treeRadix) - 1), Seq.fill(1)(i)) })
-        
         for(i <- 0 until m.numNodes){
             if(i < m.numNodes - inputs.size){
                 tree += Node(m, Message("", m.p.t), Seq.tabulate(m.treeRadix)(j => m.treeRadix*i + j+1))

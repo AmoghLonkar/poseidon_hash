@@ -90,8 +90,6 @@ class MerkleTree(m: MerkleParams) extends Module {
         }
 
         is(MerkleTree.loading){
-
-            //tree_io(loadingCount + 1.U).in_data := io.msg.bits
             inSeq(loadingCount) := io.msg.bits
 
             when(loadingDone){

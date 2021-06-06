@@ -50,7 +50,6 @@ class MerkleTreeModelTester extends FreeSpec with ChiselScalatestTester {
         val hash3: BigInt = perm3(msg3)
         val hash4: BigInt = perm4(msg4)
 
-        //val finalIn: String = hash1.toString + hash2.toString + hash3.toString + hash4.toString
         val finalIn: String = (hash1 ^ hash2 ^ hash3 ^ hash4).toString
         val final_perm = new PoseidonModel(p)
         val exp_out: BigInt = final_perm(Message(finalIn, 3))
@@ -101,7 +100,6 @@ class MerkleTreeModelTester extends FreeSpec with ChiselScalatestTester {
         val hash3: BigInt = perm3(msg3)
         val hash4: BigInt = perm4(msg4)
 
-        //val finalIn: String = hash1.toString + hash2.toString + hash3.toString + hash4.toString
         val finalIn: String = (hash1 ^ hash2 ^ hash3 ^ hash4).toString
         val final_perm = new PoseidonModel(p)
         val exp_out: BigInt = final_perm(Message(finalIn, 5))
@@ -152,7 +150,6 @@ class MerkleTreeModelTester extends FreeSpec with ChiselScalatestTester {
         val hash3: BigInt = perm3(msg3)
         val hash4: BigInt = perm4(msg4)
 
-        //val finalIn: String = hash1.toString + hash2.toString + hash3.toString + hash4.toString
         val finalIn: String = (hash1 ^ hash2 ^ hash3 ^ hash4).toString
         val final_perm = new PoseidonModel(p)
         val exp_out: BigInt = final_perm(Message(finalIn, 3))
@@ -203,7 +200,6 @@ class MerkleTreeModelTester extends FreeSpec with ChiselScalatestTester {
         val hash3: BigInt = perm3(msg3)
         val hash4: BigInt = perm4(msg4)
 
-        //val finalIn: String = hash1.toString + hash2.toString + hash3.toString + hash4.toString
         val finalIn: String = (hash1 ^ hash2 ^ hash3 ^ hash4).toString
         val final_perm = new PoseidonModel(p)
         val exp_out: BigInt = final_perm(Message(finalIn, 5))
