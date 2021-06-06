@@ -15,14 +15,25 @@ class MerkleTreeTester extends FreeSpec with ChiselScalatestTester {
         val treeModel = new MerkleTreeModel(m)
         val treeHeight = (log10(m.numNodes)/log10(m.numChild)).ceil.toInt
         val exp_out = treeModel(inSeq)
-        test(new MerkleTree(m)) { c => 
+        test(new MerkleTree(m)).withAnnotations(Seq(WriteVcdAnnotation)) { c => 
             c.io.msg.valid.poke(true.B)
             c.io.msg.ready.expect(true.B)
             c.io.digest.valid.expect(false.B)
             c.clock.step()
-            c.io.msg.bits.poke(inSeq(0).string2BigInt.U)
-            c.clock.step()
-            c.io.msg.bits.poke(inSeq(1).string2BigInt.U)
+            if(m.numInputs == 2){
+                c.io.msg.bits.poke(inSeq(0).string2BigInt.U)
+                c.clock.step()
+                c.io.msg.bits.poke(inSeq(1).string2BigInt.U)
+            }
+            else if(m.numInputs == 4){
+                c.io.msg.bits.poke(inSeq(0).string2BigInt.U)
+                c.clock.step()
+                c.io.msg.bits.poke(inSeq(1).string2BigInt.U)
+                c.clock.step()
+                c.io.msg.bits.poke(inSeq(2).string2BigInt.U)
+                c.clock.step()
+                c.io.msg.bits.poke(inSeq(3).string2BigInt.U)
+            }
             c.clock.step((treeHeight)*((m.p.Rf + m.p.Rp)*(3 + m.p.t*m.p.t/m.p.parallelism)))
             c.clock.step()
             c.io.digest.valid.expect(true.B)
