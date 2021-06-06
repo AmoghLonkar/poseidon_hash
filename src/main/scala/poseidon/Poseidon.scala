@@ -33,7 +33,7 @@ class Poseidon(p: PoseidonParams) extends Module {
     val MDSMtx = Reg(Vec(p.t, Vec(p.t, UInt((32*8).W))))
 
     val prime = Reg(UInt((32*8).W))
-    if(p.bits==255){
+    if(p.prime==255){
       prime := PoseidonModel.prime255.U
     } 
     else{
@@ -66,7 +66,7 @@ class Poseidon(p: PoseidonParams) extends Module {
       is(Poseidon.loading){
         msg := io.msg.bits
         stateVec := VecInit((0 until p.t).map(i => io.msg.bits((i+1)*256 - 1, i*256)).reverse)
-        if(p.t==3 & p.bits == 254){
+        if(p.t==3 & p.prime == 254){
           for(i <- 0 until p.t){
             for(j <- 0 until p.t){
               MDSMtx(i.U)(j.U) := PoseidonModel.fixedMDS254_3(i)(j).U
@@ -76,7 +76,7 @@ class Poseidon(p: PoseidonParams) extends Module {
             roundConst(i) := PoseidonModel.fixedRoundConst254_3(i).U
           }
           }
-          else if (p.t==5 & p.bits == 254){
+          else if (p.t==5 & p.prime == 254){
             for(i <- 0 until p.t){
               for(j <- 0 until p.t){
                 MDSMtx(i.U)(j.U) := PoseidonModel.fixedMDS254_5(i)(j).U
@@ -86,7 +86,7 @@ class Poseidon(p: PoseidonParams) extends Module {
               roundConst(i) := PoseidonModel.fixedRoundConst254_5(i).U
             }
           }
-          else if (p.t==3 & p.bits == 255){
+          else if (p.t==3 & p.prime == 255){
             for(i <- 0 until p.t){
               for(j <- 0 until p.t){
                 MDSMtx(i.U)(j.U) := PoseidonModel.fixedMDS255_3(i)(j).U
@@ -96,7 +96,7 @@ class Poseidon(p: PoseidonParams) extends Module {
               roundConst(i) := PoseidonModel.fixedRoundConst255_3(i).U
             }
           }
-          else if (p.t==5 & p.bits == 255){
+          else if (p.t==5 & p.prime == 255){
             for(i <- 0 until p.t){
               for(j <- 0 until p.t){
                 MDSMtx(i.U)(j.U) := PoseidonModel.fixedMDS255_5(i)(j).U
