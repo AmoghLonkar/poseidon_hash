@@ -107,24 +107,24 @@ object PoseidonModel{
         var fixedRoundConst = fixedRoundConst254_3
         var prime = prime254
         
-        if(p.t==3 & p.bits==254){
+        if(p.t==3 & p.prime==254){
             fixedMDS = fixedMDS254_3
             fixedRoundConst = fixedRoundConst254_3
         }
-        else if(p.t==5 & p.bits==254){
+        else if(p.t==5 & p.prime==254){
             fixedMDS = fixedMDS254_5
             fixedRoundConst = fixedRoundConst254_5
         }
-        else if(p.t==3 & p.bits==255){
+        else if(p.t==3 & p.prime==255){
             fixedMDS = fixedMDS255_3
             fixedRoundConst = fixedRoundConst255_3
         }
-        else if(p.t==5 & p.bits==255){
+        else if(p.t==5 & p.prime==255){
             fixedMDS = fixedMDS255_5
             fixedRoundConst = fixedRoundConst255_5
         }
         
-        p.bits match{
+        p.prime match{
             case 254 => prime = prime254
             case 255 => prime = prime255
         }
@@ -153,7 +153,7 @@ object PoseidonModel{
 
     def dotP(p: PoseidonParams,a: Seq[BigInt], b: Seq[BigInt]) = {
         var prime = prime254
-        p.bits match{
+        p.prime match{
             case 254 => prime = prime254
             case 255 => prime = prime255
         }
@@ -172,18 +172,16 @@ object PoseidonModel{
     }
 }
 
- case class PoseidonParams(r: Int, c: Int, Rf: Int, Rp: Int, alpha: Int, t: Int = 3, bits: Int = 254, parallelism: Int = 1){
-//case class PoseidonParams(r: Int, c: Int, Rf: Int, Rp: Int, alpha: Int, parallelism: Int = 1){
+ case class PoseidonParams(r: Int, c: Int, Rf: Int, Rp: Int, alpha: Int, t: Int = 3, prime: Int = 254, matMulParallelism: Int = 1){
     val m = r + c
-    //val t = alpha
     require(Rf % 2 == 0)
     
     val msgLen = t * 32 
     val hashLen = t * 32 
     val num_rounds = Rf + Rp
     val out_size = c
-    require(parallelism == 1 || parallelism == t)
-    require(bits == 254 || bits == 255)
+    require(matMulParallelism == 1 || matMulParallelism == t)
+    require(prime == 254 || prime == 255)
 }
 
 case class Message(str: String, t: Int) {
