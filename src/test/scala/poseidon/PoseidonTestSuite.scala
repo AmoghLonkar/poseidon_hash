@@ -22,6 +22,7 @@ import chisel3.tester.experimental.TestOptionBuilder._
             c.io.msg.valid.poke(false.B)
             c.clock.step((p.Rf + p.Rp)*(3 + p.t*p.t/p.parallelism))
             c.io.digest.valid.expect(true.B)
+            
             c.io.digest.bits.expect(expHash.U)
         }
         true
