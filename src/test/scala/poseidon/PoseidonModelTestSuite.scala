@@ -48,7 +48,7 @@ class PoseidonModelTester extends FreeSpec with ChiselScalatestTester {
     }
     "Software Permutation 255 t3 should work" in {
         val v = ArrayBuffer(BigInt(0),BigInt(1),BigInt(2))
-        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, t=3, bits=255)
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, t=3, prime=255)
         val raw_out = Seq("28ce19420fc246a05553ad1e8c98f5c9d67166be2c18e9e4cb4b4e317dd2a78a", "51f3e312c95343a896cfd8945ea82ba956c1118ce9b9859b6ea56637b4b1ddc4", "3b2b69139b235626a0bfb56c9527ae66a7bf486ad8c11c14d1da0c69bbe0f79a")
         val exp_out = ArrayBuffer[BigInt]()
         (0 until p.t).foreach(i => exp_out += BigInt(raw_out(i),16))
@@ -56,7 +56,7 @@ class PoseidonModelTester extends FreeSpec with ChiselScalatestTester {
     }
         "Software Permutation 255 t5 should work" in {
         val v = ArrayBuffer(BigInt(0),BigInt(1),BigInt(2),BigInt(3),BigInt(4))
-        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 60, alpha = 5, t=5, bits=255)
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 60, alpha = 5, t=5, prime=255)
         val raw_out = Seq("2a918b9c9f9bd7bb509331c81e297b5707f6fc7393dcee1b13901a0b22202e18", "65ebf8671739eeb11fb217f2d5c5bf4a0c3f210e3f3cd3b08b5db75675d797f7", "2cc176fc26bc70737a696a9dfd1b636ce360ee76926d182390cdb7459cf585ce","4dc4e29d283afd2a491fe6aef122b9a968e74eff05341f3cc23fda1781dcb566","03ff622da276830b9451b88b85e6184fd6ae15c8ab3ee25a5667be8592cce3b1")
         val exp_out = ArrayBuffer[BigInt]()
         (0 until p.t).foreach(i => exp_out += BigInt(raw_out(i),16))

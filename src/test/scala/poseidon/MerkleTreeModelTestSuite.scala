@@ -110,8 +110,8 @@ class MerkleTreeModelTester extends FreeSpec with ChiselScalatestTester {
         assert(model_out == exp_out)
     }
 
-     "Software 2-to-1 Merkle Tree should return the proper hash (bits = 255)" in {
-        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, bits = 255, alpha = 5)
+     "Software 2-to-1 Merkle Tree should return the proper hash (prime = 255)" in {
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, prime = 255, alpha = 5)
         val msg1 = Message("a", 3)
         val msg2 = Message("b", 3)
 
@@ -132,8 +132,8 @@ class MerkleTreeModelTester extends FreeSpec with ChiselScalatestTester {
         assert(model_out == exp_out)
     }
 
-    "Software 4-to-1 Merkle Tree should return the proper hash (bits = 255)" in {
-        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, bits = 255, alpha = 5)
+    "Software 4-to-1 Merkle Tree should return the proper hash (prime = 255)" in {
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, prime = 255, alpha = 5)
         val msg1 = Message("a", 3)
         val msg2 = Message("b", 3)
         val msg3 = Message("c", 3)
@@ -160,8 +160,8 @@ class MerkleTreeModelTester extends FreeSpec with ChiselScalatestTester {
         assert(model_out == exp_out)
     }
 
-     "Software 2-to-1 Merkle Tree should return the proper hash (t = 5, bits = 255)" in {
-        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, t = 5, bits = 255, alpha = 5)
+     "Software 2-to-1 Merkle Tree should return the proper hash (t = 5, prime = 255)" in {
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, t = 5, prime = 255, alpha = 5)
         val msg1 = Message("a", 5)
         val msg2 = Message("b", 5)
 
@@ -182,8 +182,8 @@ class MerkleTreeModelTester extends FreeSpec with ChiselScalatestTester {
         assert(model_out == exp_out)
     }
 
-    "Software 4-to-1 Merkle Tree should return the proper hash (t = 5, bits = 255)" in {
-        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, t = 5, bits = 255, alpha = 5)
+    "Software 4-to-1 Merkle Tree should return the proper hash (t = 5, prime = 255)" in {
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, t = 5, prime = 255, alpha = 5)
         val msg1 = Message("a", 5)
         val msg2 = Message("b", 5)
         val msg3 = Message("c", 5)
