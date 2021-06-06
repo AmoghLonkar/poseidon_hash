@@ -14,7 +14,7 @@ object Poseidon {
     // States
     val idle :: loading :: firstRf :: rpRounds :: secondRf :: Nil = Enum(5)
 
-    //val defParams = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, parallelism = 3)
+    //val defParams = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, matMulParallelism = 3)
 
     //Collapse Seq[UInt] to single UInt
     def collapseSeq(m : Seq[UInt]): UInt = m.tail.foldLeft(m.head) { case(a, b)  => Cat(a, b) }
@@ -48,9 +48,9 @@ class Poseidon(p: PoseidonParams) extends Module {
     io.msg.ready := (state === (Poseidon.idle))
 
     //Counter instantiation
-    val (cycles, done) = Counter(0 until (p.Rf + p.Rp)*(3 + p.t*p.t/p.parallelism), true.B, state === Poseidon.loading)
+    val (cycles, done) = Counter(0 until (p.Rf + p.Rp)*(3 + p.t*p.t/p.matMulParallelism), true.B, state === Poseidon.loading)
     
-    val (roundCycles, roundDone) = Counter(0 until 3 + p.t*p.t/p.parallelism, (state === Poseidon.firstRf) || (state === Poseidon.rpRounds) || (state === Poseidon.secondRf))
+    val (roundCycles, roundDone) = Counter(0 until 3 + p.t*p.t/p.matMulParallelism, (state === Poseidon.firstRf) || (state === Poseidon.rpRounds) || (state === Poseidon.secondRf))
     val (fullCycles, fullRoundDone) = Counter(0 until p.Rf/2, roundDone && (state === Poseidon.firstRf || state === Poseidon.secondRf))
     val (partialCycles, partialRoundDone) = Counter(0 until p.Rp, roundDone && (state === Poseidon.rpRounds))
 
@@ -134,20 +134,20 @@ class Poseidon(p: PoseidonParams) extends Module {
           //S-box layer
           stateVec := stateVec.map(i => Seq.fill(p.alpha)(i).reduce(_*_) % prime)
           workVec := (0 until p.t).map(i => 0.U)
-        }.elsewhen(roundCycles === 2.U + p.t.U * p.t.U/p.parallelism.U){
+        }.elsewhen(roundCycles === 2.U + p.t.U * p.t.U/p.matMulParallelism.U){
           (0 until p.t).foreach(i => stateVec(i) := workVec(i) % prime)
 
         }
         .otherwise{
           //Mix: Matrix Multiplication Step
 
-          switch(p.parallelism.U){
+          switch(p.matMulParallelism.U){
             is(1.U){
               workVec(rCycles) := (workVec(rCycles) + (MDSMtx(rCycles)(kCycles) * stateVec(kCycles)) % prime) % prime
             }
 
             is(p.t.U){
-              for(i <- 0 until p.parallelism){
+              for(i <- 0 until p.matMulParallelism){
                 workVec(i.U) := (workVec(i.U) + (MDSMtx(i.U)(kCycles) * stateVec(kCycles)) % prime) % prime
               }
             }
@@ -174,18 +174,18 @@ class Poseidon(p: PoseidonParams) extends Module {
           //S-box layer
           stateVec := stateVec.map(i => if( i == stateVec.head) Seq.fill(p.alpha)(i).reduce(_*_) % prime else i)
           workVec := (0 until p.t).map(i => 0.U)
-        }.elsewhen(roundCycles === 2.U + p.t.U*p.t.U/p.parallelism.U){
+        }.elsewhen(roundCycles === 2.U + p.t.U*p.t.U/p.matMulParallelism.U){
           (0 until p.t).foreach(i => stateVec(i) := workVec(i) % prime)
         }
         .otherwise{
           //Mix: Matrix Multiplication Step
-          switch(p.parallelism.U){
+          switch(p.matMulParallelism.U){
             is(1.U){
               workVec(rCycles) := (workVec(rCycles) + (MDSMtx(rCycles)(kCycles) * stateVec(kCycles)) % prime) % prime
             }
 
             is(p.t.U){
-              for(i <- 0 until p.parallelism){
+              for(i <- 0 until p.matMulParallelism){
                 workVec(i.U) := (workVec(i.U) + (MDSMtx(i.U)(kCycles) * stateVec(kCycles)) % prime) % prime
               }
             }
@@ -213,18 +213,18 @@ class Poseidon(p: PoseidonParams) extends Module {
 
           stateVec := stateVec.map(i => Seq.fill(p.alpha)(i).reduce(_*_) % prime)
           workVec := (0 until p.t).map(i => 0.U)
-        }.elsewhen(roundCycles === 2.U + p.t.U*p.t.U/p.parallelism.U){
+        }.elsewhen(roundCycles === 2.U + p.t.U*p.t.U/p.matMulParallelism.U){
           (0 until p.t).foreach(i => stateVec(i) := workVec(i) % prime)
         }
         .otherwise{
           //Mix: Matrix Multiplication Step
-          switch(p.parallelism.U){
+          switch(p.matMulParallelism.U){
             is(1.U){
               workVec(rCycles) := (workVec(rCycles) + (MDSMtx(rCycles)(kCycles) * stateVec(kCycles)) % prime) % prime
             }
 
             is(p.t.U){
-              for(i <- 0 until p.parallelism){
+              for(i <- 0 until p.matMulParallelism){
                 workVec(i.U) := (workVec(i.U) + (MDSMtx(i.U)(kCycles) * stateVec(kCycles)) % prime) % prime
               }
             }
