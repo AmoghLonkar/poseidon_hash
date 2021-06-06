@@ -20,9 +20,8 @@ import chisel3.tester.experimental.TestOptionBuilder._
             c.io.msg.bits.poke(m.string2BigInt.U)
             c.clock.step()
             c.io.msg.valid.poke(false.B)
-            c.clock.step((p.Rf + p.Rp)*(3 + p.t*p.t/p.parallelism))
+            c.clock.step((p.Rf + p.Rp)*(3 + p.t*p.t/p.matMulParallelism))
             c.io.digest.valid.expect(true.B)
-            
             c.io.digest.bits.expect(expHash.U)
         }
         true
@@ -34,7 +33,7 @@ import chisel3.tester.experimental.TestOptionBuilder._
         testPoseidon(p, m) 
     }
     "Hardware Poseidon 254 t5 module should compute correct hash of ''" in {
-        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 60, alpha = 5, t = 5, parallelism = 5)
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 60, alpha = 5, t = 5, matMulParallelism = 5)
         val m = Message("", p.t)
         testPoseidon(p, m) 
     }
@@ -46,7 +45,7 @@ import chisel3.tester.experimental.TestOptionBuilder._
     }
 
     "Hardware Poseidon 255 t5 module should compute correct hash of ''" in {
-        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, t = 5, bits = 255, parallelism = 5)
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, t = 5, bits = 255, matMulParallelism = 5)
         val m = Message("", p.t)
         testPoseidon(p, m) 
     }
@@ -64,19 +63,19 @@ import chisel3.tester.experimental.TestOptionBuilder._
     }
 
     "Hardware Poseidon module should compute correct hash of '' using parallel MatMul" in {
-        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, parallelism = 3)
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, matMulParallelism = 3)
         val m = Message("", p.t)
         testPoseidon(p, m) 
     }
 
     "Hardware Poseidon module should compute correct hash of 'abc' using parallel MatMul" in {
-        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, parallelism = 3)
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, matMulParallelism = 3)
         val m = Message("abc", p.t)
         testPoseidon(p, m) 
     }
 
     "Hardware Poseidon module should compute correct hash of 'Chisel is too much fun!' using parallel MatMul" in {
-        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, parallelism = 3)
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, matMulParallelism = 3)
         val m = Message("Chisel is too much fun!", p.t)
         testPoseidon(p, m) 
     }

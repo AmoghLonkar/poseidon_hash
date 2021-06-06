@@ -13,7 +13,7 @@ class MerkleTreeTester extends FreeSpec with ChiselScalatestTester {
 
     def testMerkleTree(m: MerkleParams, inSeq: Seq[Message]): Boolean = {
         val treeModel = new MerkleTreeModel(m)
-        val treeHeight = (log10(m.numNodes)/log10(m.numChild)).ceil.toInt
+        val treeHeight = (log10(m.numNodes)/log10(m.treeRadix)).ceil.toInt
         val exp_out = treeModel(inSeq)
         test(new MerkleTree(m)).withAnnotations(Seq(WriteVcdAnnotation)) { c => 
             c.io.msg.valid.poke(true.B)
@@ -34,7 +34,7 @@ class MerkleTreeTester extends FreeSpec with ChiselScalatestTester {
                 c.clock.step()
                 c.io.msg.bits.poke(inSeq(3).string2BigInt.U)
             }
-            c.clock.step((treeHeight)*((m.p.Rf + m.p.Rp)*(3 + m.p.t*m.p.t/m.p.parallelism)))
+            c.clock.step((treeHeight)*((m.p.Rf + m.p.Rp)*(3 + m.p.t*m.p.t/m.p.matMulParallelism)))
             c.clock.step()
             c.io.digest.valid.expect(true.B)
             c.clock.step(4)
@@ -44,7 +44,7 @@ class MerkleTreeTester extends FreeSpec with ChiselScalatestTester {
     }
 
     "Hardware MerkleTree root should store the correct value in simple 2-to-1 tree" in {
-        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, parallelism = 3)
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, matMulParallelism = 3)
         val m = MerkleParams(p, 2, 2)
 
         val msg1 = Message("a", 3)
@@ -55,7 +55,7 @@ class MerkleTreeTester extends FreeSpec with ChiselScalatestTester {
     }
 
     "Hardware MerkleTree root should store the correct value in simple 4-to-1 tree" in {
-        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, parallelism = 3)
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, matMulParallelism = 3)
         val m = MerkleParams(p, 4, 4)
 
         val msg1 = Message("a", 3)
@@ -68,7 +68,7 @@ class MerkleTreeTester extends FreeSpec with ChiselScalatestTester {
     }
 
     "Hardware MerkleTree root should store the correct value in simple 2-to-1 tree (bits = 255)" in {
-        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, bits = 255, parallelism = 3)
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, bits = 255, matMulParallelism = 3)
         val m = MerkleParams(p, 2, 2)
         val msg1 = Message("a", 3)
         val msg2 = Message("b", 3)
@@ -78,7 +78,7 @@ class MerkleTreeTester extends FreeSpec with ChiselScalatestTester {
     }
 
     "Hardware MerkleTree root should store the correct value in simple 4-to-1 tree (bits = 255)" in {
-        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, bits = 255, parallelism = 3)
+        val p = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, bits = 255, matMulParallelism = 3)
         val m = MerkleParams(p, 4, 4)
 
         val msg1 = Message("a", 3)
