@@ -1,5 +1,3 @@
-//TODO Abstract interface 
-
 package poseidon
 
 import chisel3._
@@ -9,12 +7,8 @@ import scala.collection.mutable.ArrayBuffer
 import scala.annotation.switch
 
 object Poseidon {
-    //val prime = PoseidonModel.prime.U 
-
     // States
     val idle :: loading :: firstRf :: rpRounds :: secondRf :: Nil = Enum(5)
-
-    //val defParams = PoseidonParams(r = 64, c = 64, Rf = 8, Rp = 57, alpha = 5, matMulParallelism = 3)
 
     //Collapse Seq[UInt] to single UInt
     def collapseSeq(m : Seq[UInt]): UInt = m.tail.foldLeft(m.head) { case(a, b)  => Cat(a, b) }
@@ -70,7 +64,6 @@ class Poseidon(p: PoseidonParams) extends Module {
       }
 
       is(Poseidon.loading){
-        //Single cycle transfer for now  
         msg := io.msg.bits
         stateVec := VecInit((0 until p.t).map(i => io.msg.bits((i+1)*256 - 1, i*256)).reverse)
         if(p.t==3 & p.bits == 254){
@@ -120,9 +113,7 @@ class Poseidon(p: PoseidonParams) extends Module {
       is(Poseidon.firstRf){
         //First Rf/2 full rounds
         
-
         when(roundCycles === 0.U){
-
           //Add round constants
           for(i <- 0 until p.t){
             stateVec(i.U) := stateVec(i.U) + roundConst(i.U + index) % prime
@@ -130,7 +121,6 @@ class Poseidon(p: PoseidonParams) extends Module {
           }
 
         }.elsewhen(roundCycles === 1.U){
-
           //S-box layer
           stateVec := stateVec.map(i => Seq.fill(p.alpha)(i).reduce(_*_) % prime)
           workVec := (0 until p.t).map(i => 0.U)
@@ -140,7 +130,6 @@ class Poseidon(p: PoseidonParams) extends Module {
         }
         .otherwise{
           //Mix: Matrix Multiplication Step
-
           switch(p.matMulParallelism.U){
             is(1.U){
               workVec(rCycles) := (workVec(rCycles) + (MDSMtx(rCycles)(kCycles) * stateVec(kCycles)) % prime) % prime
@@ -165,7 +154,6 @@ class Poseidon(p: PoseidonParams) extends Module {
       is(Poseidon.rpRounds){
         //Partial rounds
         when(roundCycles === 0.U){
-
           //Add round constants
           for(i <- 0 until p.t){
             stateVec(i.U) := (stateVec(i.U) + roundConst(i.U + index)) % prime
@@ -201,8 +189,8 @@ class Poseidon(p: PoseidonParams) extends Module {
       }
 
       is(Poseidon.secondRf){
-
         //Last Rf/2 full rounds
+        
         when(roundCycles === 0.U){
           //Add round constants
           for(i <- 0 until p.t){
@@ -210,7 +198,6 @@ class Poseidon(p: PoseidonParams) extends Module {
           }
         }.elsewhen(roundCycles === 1.U){
           //S-box layer
-
           stateVec := stateVec.map(i => Seq.fill(p.alpha)(i).reduce(_*_) % prime)
           workVec := (0 until p.t).map(i => 0.U)
         }.elsewhen(roundCycles === 2.U + p.t.U*p.t.U/p.matMulParallelism.U){

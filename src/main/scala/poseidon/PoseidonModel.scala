@@ -173,9 +173,7 @@ object PoseidonModel{
 }
 
  case class PoseidonParams(r: Int, c: Int, Rf: Int, Rp: Int, alpha: Int, t: Int = 3, bits: Int = 254, matMulParallelism: Int = 1){
-//case class PoseidonParams(r: Int, c: Int, Rf: Int, Rp: Int, alpha: Int, matMulParallelism: Int = 1){
     val m = r + c
-    //val t = alpha
     require(Rf % 2 == 0)
     
     val msgLen = t * 32 
