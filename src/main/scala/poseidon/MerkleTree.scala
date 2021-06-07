@@ -48,8 +48,7 @@ class MerkleTree(m: MerkleParams) extends Module {
     val inSeq = Reg(Vec(m.numInputs, UInt((m.p.msgLen*8).W)))
 
     //Tree as a vector of nodes
-    val tree = for (i <- 0 until m.numNodes) yield
-    {
+    val tree = for (i <- 0 until m.numNodes) yield {
         val node = Module(new HWNode(m))
         node
     }   
@@ -67,7 +66,6 @@ class MerkleTree(m: MerkleParams) extends Module {
             tree_io(i).children := VecInit(Seq.fill(m.treeRadix)(i.U))
             tree_io(i).in_data := 0.U
         }
-
         tree_io(i).dataReady := 0.B
     }
 
@@ -105,7 +103,6 @@ class MerkleTree(m: MerkleParams) extends Module {
                 if(i >= m.numNodes - m.numInputs){
                     tree_io(i).in_data := inSeq(i - 1)
                 }
-
                 tree_io(i).dataReady := 1.B
             }
 
